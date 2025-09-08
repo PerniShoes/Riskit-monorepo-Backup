@@ -1,10 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [risk, setRisk] = useState<{ risk: string; probability: number } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/risk')
+      .then((r) => r.json())
+      .then(setRisk)
+      .catch(() => setRisk(null))
+  }, [])
 
   return (
     <>
@@ -24,6 +32,14 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
+      </div>
+      <div className="card">
+        <h2>Risk (from backend mock)</h2>
+        {risk ? (
+          <pre>{JSON.stringify(risk, null, 2)}</pre>
+        ) : (
+          <p>loading or not available</p>
+        )}
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
