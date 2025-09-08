@@ -1,0 +1,18 @@
+﻿# Node / frontend
+node_modules/
+dist/
+.vite/
+.env
+
+# C++ / build
+build/
+cmake-build-*/
+*.o
+*.obj
+*.exe
+*.dll
+*.pdb
+
+# IDE/editor
+.vscode/
+.idea/
