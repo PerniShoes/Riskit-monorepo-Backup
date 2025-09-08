@@ -27,6 +27,17 @@ static void platform_startup()
 #endif
 }
 
+// Cross-platform error printing helper, AH, Linux 
+static void print_socket_error(const char* msg)
+{
+    char errBuf[256];
+#if defined(_MSC_VER)
+    strerror_s(errBuf,sizeof(errBuf),errno);
+#else
+    strerror_r(errno,errBuf,sizeof(errBuf));
+#endif
+    std::cerr << msg << ": " << errBuf << "\n";
+}
 
 static int platform_close(int fd)
 {
@@ -43,9 +54,7 @@ int start_server(uint16_t port)
 
     int server_fd = int(socket(AF_INET, SOCK_STREAM, 0));
     if (server_fd < 0) {
-        char errBuf[256];
-        strerror_s(errBuf,sizeof(errBuf),errno);
-        std::cerr << "socket failed: " << errBuf << "\n";
+        print_socket_error("socket failed");
         return -1;
     }
 
@@ -58,17 +67,13 @@ int start_server(uint16_t port)
     address.sin_port = htons(port);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        char errBuf[256];
-        strerror_s(errBuf,sizeof(errBuf),errno);
-        std::cerr << "socket failed: " << errBuf << "\n";
+        print_socket_error("bind failed");
         platform_close(server_fd);
         return -1;
     }
 
     if (listen(server_fd, 10) < 0) {
-        char errBuf[256];
-        strerror_s(errBuf,sizeof(errBuf),errno);
-        std::cerr << "socket failed: " << errBuf << "\n";
+        print_socket_error("listen failed");
         platform_close(server_fd);
         return -1;
     }
