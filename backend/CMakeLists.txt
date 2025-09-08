@@ -12,3 +12,8 @@ if (MSVC)
 else()
   target_compile_options(riskit_server PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+# Link Winsock on Windows
+if (WIN32)
+  target_link_libraries(riskit_server PRIVATE Ws2_32)
+endif()

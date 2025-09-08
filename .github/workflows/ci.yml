@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Build C++ backend
+        run: |
+          cmake -S backend -B backend/build
+          cmake --build backend/build --config Release
+
+      - name: Run backend tests (smoke)
+        run: |
+          if [ -f backend/build/riskit_server ]; then
+            backend/build/riskit_server & sleep 1 ; curl -f http://localhost:8081/api/health || (cat /proc/$$/status; exit 1)
+          else
+            echo "no backend binary"
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
