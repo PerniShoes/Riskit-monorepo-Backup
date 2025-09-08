@@ -16,3 +16,4 @@ cmake-build-*/
 # IDE/editor
 .vscode/
 .idea/
+.vs/

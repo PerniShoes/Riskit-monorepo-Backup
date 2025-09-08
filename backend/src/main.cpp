@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <string>
 #include <thread>
+#include "http_server.cpp"
 
 extern int start_server(uint16_t port);
 extern std::string read_line(int fd);
@@ -16,7 +17,7 @@ int main()
     while (true) {
         struct sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
-        int client = accept(server_fd, (struct sockaddr *)&client_addr, &client_len);
+        int client = int(accept(server_fd, (struct sockaddr *)&client_addr, &client_len));
         if (client < 0) {
             std::cerr << "accept failed\n";
             break;
@@ -41,7 +42,7 @@ int main()
                 std::string body = "{\"error\":\"not_found\"}";
                 std::string resp = http_response(body, "404 Not Found");
                 send(client, resp.c_str(), (int)resp.size(), 0);
-            }
+            }   
         }
 
         platform_close(client);

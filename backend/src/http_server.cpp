@@ -27,12 +27,6 @@ static void platform_startup()
 #endif
 }
 
-static void platform_cleanup()
-{
-#if defined(_WIN32)
-    WSACleanup();
-#endif
-}
 
 static int platform_close(int fd)
 {
@@ -47,9 +41,11 @@ int start_server(uint16_t port)
 {
     platform_startup();
 
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int server_fd = int(socket(AF_INET, SOCK_STREAM, 0));
     if (server_fd < 0) {
-        std::cerr << "socket failed: " << strerror(errno) << "\n";
+        char errBuf[256];
+        strerror_s(errBuf,sizeof(errBuf),errno);
+        std::cerr << "socket failed: " << errBuf << "\n";
         return -1;
     }
 
@@ -62,13 +58,17 @@ int start_server(uint16_t port)
     address.sin_port = htons(port);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        std::cerr << "bind failed: " << strerror(errno) << "\n";
+        char errBuf[256];
+        strerror_s(errBuf,sizeof(errBuf),errno);
+        std::cerr << "socket failed: " << errBuf << "\n";
         platform_close(server_fd);
         return -1;
     }
 
     if (listen(server_fd, 10) < 0) {
-        std::cerr << "listen failed: " << strerror(errno) << "\n";
+        char errBuf[256];
+        strerror_s(errBuf,sizeof(errBuf),errno);
+        std::cerr << "socket failed: " << errBuf << "\n";
         platform_close(server_fd);
         return -1;
     }
@@ -102,4 +102,3 @@ std::string http_response(const std::string &body, const std::string &status = "
     resp += body;
     return resp;
 }
-*** End Patch
