@@ -87,7 +87,7 @@ std::string read_line(int fd)
     std::string line;
     char c;
     while (true) {
-        int n = recv(fd, &c, 1, 0);
+    int n = recv(fd, &c, 1, 0);
         if (n <= 0) break;
         if (c == '\r') continue;
         if (c == '\n') break;
@@ -106,4 +106,16 @@ std::string http_response(const std::string &body, const std::string &status = "
     resp += "\r\n";
     resp += body;
     return resp;
+}
+
+// Small helper: read request method and path from socket (first line)
+std::pair<std::string,std::string> read_request_line(int fd) {
+    std::string line = read_line(fd);
+    // format: METHOD /path HTTP/1.1
+    auto first_space = line.find(' ');
+    if (first_space == std::string::npos) return {"",""};
+    auto second_space = line.find(' ', first_space+1);
+    std::string method = line.substr(0, first_space);
+    std::string path = (second_space==std::string::npos) ? line.substr(first_space+1) : line.substr(first_space+1, second_space-first_space-1);
+    return {method, path};
 }
