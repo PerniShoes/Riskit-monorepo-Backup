@@ -135,9 +135,9 @@ void Server::Run()
         Response resp{"", "404 Not Found"};
         for (auto& ep : m_Endpoints)
         {
-            if (ep->IsMatch(req))
+            if (ep->IsMatch(path))
             {
-                resp = ep->Handle();
+                resp = ep->HandleMethod(req);
                 break;
             }
         }

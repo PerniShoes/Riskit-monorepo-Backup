@@ -47,12 +47,26 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
 
-  useEffect(() => {
-    fetch('/api/state')
-      .then((r) => r.json())
-      .then((data) => setPlayers(data.players))
-      .catch(() => setPlayers([]));
-  }, []);
+    useEffect(() => {
+        fetch('/api/state')
+            .then((r) => r.json())
+            .then((data) => {
+                console.log("Fetched state:", data);
+
+                if (!data || !Array.isArray(data.players)) {
+                    console.error("Invalid /api/state response: expected { players: Player[] }, got:", data);
+                    setPlayers([]); // fallback to empty
+                    return;
+                }
+
+                setPlayers(data.players);
+            })
+            .catch((err) => {
+                console.error("Failed to fetch /api/state:", err);
+                setPlayers([]);
+            });
+    }, []);
+
 
   const showPlayer = (id: number) => {
     setLoading(true);

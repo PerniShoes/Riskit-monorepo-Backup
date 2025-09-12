@@ -1,15 +1,16 @@
 #pragma once
 #include "EndpointBase.hpp"
 
-class StateEndpoint : public EndpointBase
+class HealthEndpoint : public EndpointBase
 {
 public:
-    StateEndpoint();
-     
+    HealthEndpoint();
+
     Response HGET()override;
     Response HPOST()override;
     Response HPUT()override;
     Response HDELETE()override;
+
 
 private:
 

@@ -6,10 +6,12 @@ class PlayerEndpoint : public EndpointBase
 public:
     PlayerEndpoint();
 
-    Response Handle() override;
+    Response HGET()override;
+    Response HPOST()override;
+    Response HPUT()override;
+    Response HDELETE()override;
 
 private:
-    std::string ExtractParam(const std::string& name);
 
 
 };

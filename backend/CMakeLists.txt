@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add your executable
-add_executable(riskit_server src/main.cpp "src/EndpointBase.cpp" "src/PlayerEndpoint.cpp" "src/Server.cpp" "src/StateEndpoint.cpp")
+add_executable(riskit_server src/main.cpp "src/EndpointBase.cpp" "src/PlayerEndpoint.cpp" "src/Server.cpp" "src/StateEndpoint.cpp" "src/HealthEndPoint.cpp" "src/HealthEndPoint.cpp" "src/RiskEndpoint.cpp" "src/RiskEndpoint.cpp")
 
 # ---------------------------
 # Add this block for nlohmann/json
