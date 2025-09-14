@@ -1,0 +1,63 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: riskit-backend
+    ports:
+      - "8081:8081"
+    volumes:
+      # Mount source code dla live debugging
+      - ./backend/src:/app/src:ro
+      - ./backend/backend.log:/app/backend.log
+    environment:
+      - NODE_ENV=development
+    # Dla debugowania można dodać:
+    # command: gdb --batch --ex run --ex bt --args ./build/riskit_server
+    # stdin_open: true
+    # tty: true
+    networks:
+      - riskit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend  
+      dockerfile: Dockerfile
+    container_name: riskit-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://backend:8081
+    depends_on:
+      - backend
+    networks:
+      - riskit-network
+
+  # Mock backend dla testów
+  backend-mock:
+    image: node:20-alpine
+    container_name: riskit-backend-mock
+    working_dir: /app
+    volumes:
+      - ./backend_mock:/app
+    command: node server.js
+    ports:
+      - "8080:8080"
+    networks:
+      - riskit-network
+
+networks:
+  riskit-network:
+    driver: bridge
+
+volumes:
+  backend-logs:
