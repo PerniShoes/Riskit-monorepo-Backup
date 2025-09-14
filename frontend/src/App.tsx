@@ -4,111 +4,185 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import Container from '@mui/material/Container'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
 import Paper from '@mui/material/Paper'
-import Divider from '@mui/material/Divider'
-import GameMap from './components/GameMap'
+import Chip from '@mui/material/Chip'
+import RiskMap from './components/RiskMap'
+import GameController from './components/GameController'
+import { useGameLogic } from './hooks/useGameLogic'
+import type { Territory, Player } from './types/game'
 
 const theme = createTheme()
 
-
-
-type Player = {
-  id: number;
-  name: string;
-  gold: number;
-  army: { infantry: number; tanks: number };
-};
-
-type Move = {
-  turn: number;
-  action: string;
-  value: string;
-};
-
-const demoMoves: Move[] = [
-  { turn: 1, action: 'Recruit', value: '+50 infantry' },
-  { turn: 2, action: 'Attack', value: 'Player2' },
-  { turn: 3, action: 'Upgrade', value: '+2 tanks' },
-];
-
-const demoRanking = [
-  { name: 'Player1', score: 1200 },
-  { name: 'Player2', score: 950 },
-  { name: 'Player3', score: 800 },
-];
+const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
 
 
 function App() {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [selected, setSelected] = useState<Player | null>(null);
   const [loading, setLoading] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
 
-    useEffect(() => {
-        fetch('/api/state')
-            .then((r) => r.json())
-            .then((data) => {
-                console.log("Fetched state:", data);
+  const {
+    gameState,
+    selectTerritory,
+    placeArmy,
+    executeAttack,
+    endTurn,
+    changePhase
+  } = useGameLogic(players);
 
-                if (!data || !Array.isArray(data.players)) {
-                    console.error("Invalid /api/state response: expected { players: Player[] }, got:", data);
-                    setPlayers([]); // fallback to empty
-                    return;
-                }
+  useEffect(() => {
+    fetch('/api/state')
+      .then((r) => r.json())
+      .then((data) => {
+        console.log("Fetched state:", data);
 
-                setPlayers(data.players);
-            })
-            .catch((err) => {
-                console.error("Failed to fetch /api/state:", err);
-                setPlayers([]);
-            });
-    }, []);
+        if (!data || !Array.isArray(data.players)) {
+          console.error("Invalid /api/state response: expected { players: Player[] }, got:", data);
+          setPlayers([]);
+          return;
+        }
 
+        // Add colors and missing properties to players
+        const playersWithColors: Player[] = data.players.map((player: any, index: number) => ({
+          ...player,
+          color: playerColors[index % playerColors.length],
+          territoriesCount: 0,
+          continentsControlled: []
+        }));
+
+        setPlayers(playersWithColors);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch /api/state:", err);
+        setPlayers([]);
+      });
+  }, []);
 
   const showPlayer = (id: number) => {
     setLoading(true);
     fetch(`/api/player/${id}`)
       .then((r) => r.json())
-      .then((data) => setSelected(data))
-      .catch(() => setSelected(null))
+      .then((data) => {
+        const playerWithColor = {
+          ...data,
+          color: playerColors[(id - 1) % playerColors.length],
+          territoriesCount: 0,
+          continentsControlled: []
+        };
+        console.log("Selected player:", playerWithColor);
+      })
+      .catch(() => console.error("Failed to fetch player"))
       .finally(() => setLoading(false));
+  };
+
+  const handleTerritoryClick = (territory: Territory) => {
+    selectTerritory(territory);
+  };
+
+  const handleAttack = () => {
+    const result = executeAttack();
+    if (result) {
+      console.log("Attack result:", result);
+    }
   };
 
   if (!gameStarted) {
     return (
       <ThemeProvider theme={theme}>
-        <Container maxWidth="sm">
+        <Container maxWidth="md">
           <Box sx={{ my: 4 }}>
-            <Typography variant="h3" component="h1" gutterBottom color="primary">
-              RiskIT — Game Menu
+            <Typography variant="h3" component="h1" gutterBottom sx={{ color: 'white', textAlign: 'center', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
+              RiskIT — Podbój Świata
             </Typography>
-            <Typography variant="h6" gutterBottom>
-              Wybierz gracza, aby zobaczyć szczegóły:
+            
+            <Typography variant="h6" gutterBottom sx={{ color: 'white', textAlign: 'center', mb: 3 }}>
+              Strategiczna gra o podboju świata
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
-              {players.map((p) => (
-                <Button key={p.id} variant="contained" onClick={() => showPlayer(p.id)}>
-                  {p.name}
-                </Button>
-              ))}
-            </Box>
-            {loading && <Typography>Ładowanie...</Typography>}
-            {selected && (
-              <Card sx={{ mt: 2 }}>
-                <CardContent>
-                  <Typography variant="h5">{selected.name}</Typography>
-                  <Typography>Gold: {selected.gold}</Typography>
-                  <Typography>Infantry: {selected.army.infantry}</Typography>
-                  <Typography>Tanks: {selected.army.tanks}</Typography>
-                </CardContent>
-              </Card>
+
+            {/* Game Rules */}
+            <Paper elevation={4} sx={{ p: 3, mb: 3, bgcolor: 'rgba(255,255,255,0.95)' }}>
+              <Typography variant="h5" gutterBottom color="primary">
+                📋 Jak grać w RiskIT?
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                <strong>Cel gry:</strong> Podbij wszystkie terytoria na świecie i zostań jedynym władcą!
+              </Typography>
+              <Typography variant="body2" component="div" sx={{ mb: 2 }}>
+                <strong>Fazy tury:</strong>
+                <ul style={{ marginLeft: 20 }}>
+                  <li><strong>🪖 DRAFT</strong> - Otrzymujesz armie i rozmieszczasz je na swoich terytoriach</li>
+                  <li><strong>⚔️ ATTACK</strong> - Atakujesz sąsiednie terytoria przeciwników</li>
+                  <li><strong>🛡️ FORTIFY</strong> - Przesuwasz armie między swoimi terytoriami</li>
+                </ul>
+              </Typography>
+              <Typography variant="body2">
+                <strong>💡 Wskazówki:</strong> Kontroluj całe kontynenty aby otrzymać bonus armii! Im więcej terytoriów posiadasz, tym więcej armii otrzymujesz każdą turę.
+              </Typography>
+            </Paper>
+
+            {/* Players Selection */}
+            <Paper elevation={4} sx={{ p: 3, mb: 3, bgcolor: 'rgba(255,255,255,0.95)' }}>
+              <Typography variant="h6" gutterBottom>
+                👥 Wybierz swojego gracza:
+              </Typography>
+              {players.length === 0 ? (
+                <Typography color="text.secondary">Ładowanie graczy...</Typography>
+              ) : (
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 2 }}>
+                  {players.map((p) => (
+                    <Button 
+                      key={p.id} 
+                      variant="contained" 
+                      onClick={() => showPlayer(p.id)}
+                      sx={{ 
+                        backgroundColor: p.color,
+                        p: 2,
+                        '&:hover': {
+                          backgroundColor: p.color,
+                          opacity: 0.8,
+                          transform: 'scale(1.02)'
+                        },
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                          {p.name}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                          💰 {p.gold} złota
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                          🪖 {p.army.infantry} piechoty | 🚗 {p.army.tanks} czołgów
+                        </Typography>
+                      </Box>
+                    </Button>
+                  ))}
+                </Box>
+              )}
+            </Paper>
+
+            {loading && (
+              <Paper elevation={2} sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.95)' }}>
+                <Typography>Ładowanie danych gracza...</Typography>
+              </Paper>
             )}
-            <Button sx={{ mt: 4 }} variant="contained" color="success" size="large" onClick={() => setGameStarted(true)}>
-              Graj
-            </Button>
+            
+            <Box sx={{ textAlign: 'center' }}>
+              <Button 
+                sx={{ mt: 2 }} 
+                variant="contained" 
+                color="success" 
+                size="large" 
+                onClick={() => setGameStarted(true)}
+                disabled={players.length === 0}
+                startIcon="🚀"
+              >
+                Rozpocznij Grę!
+              </Button>
+            </Box>
           </Box>
         </Container>
       </ThemeProvider>
@@ -118,41 +192,99 @@ function App() {
   // Widok gry
   return (
     <ThemeProvider theme={theme}>
-      <Container maxWidth="lg">
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, my: 4 }}>
-          {/* Mapka */}
-          <Paper elevation={4} sx={{ flex: 2, minHeight: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#e0e7ff,#f0fdfa)' }}>
-            <Typography variant="h4" color="primary" sx={{ mb: 2 }}>MAPA</Typography>
-            <GameMap />
-            <Button sx={{ mt: 3 }} variant="outlined" color="secondary" onClick={() => setGameStarted(false)}>
-              Cofnij
+      <Container maxWidth="xl" className="fade-in-up">
+        {/* Top Navigation Bar */}
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            p: 2, 
+            mb: 2, 
+            bgcolor: 'rgba(255,255,255,0.95)',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2
+          }}
+        >
+          <Box>
+            <Typography variant="h4" component="h1" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+              🌍 RiskIT — Podbój Świata
+            </Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Chip 
+              icon={<span>🎯</span>} 
+              label={`Tura: ${gameState.turn || 1}`} 
+              color="primary" 
+              variant="filled"
+            />
+            <Chip 
+              icon={<span>⏱️</span>} 
+              label={`Faza: ${gameState.phase.toUpperCase()}`} 
+              color="secondary" 
+              variant="filled"
+            />
+            <Chip 
+              icon={<span>👤</span>} 
+              label={`Gracz: ${gameState.currentPlayer + 1}`} 
+              color="warning" 
+              variant="filled"
+            />
+            <Button 
+              variant="outlined" 
+              color="error" 
+              onClick={() => setGameStarted(false)}
+              size="small"
+            >
+              Menu Główne
             </Button>
-          </Paper>
-          {/* Minipanel */}
-          <Paper elevation={2} sx={{ flex: 1, p: 2, minWidth: 300, background: '#f8fafc' }}>
-            <Typography variant="h5" gutterBottom>Statystyki gracza</Typography>
-            {selected ? (
-              <>
-                <Typography>Gold: {selected.gold}</Typography>
-                <Typography>Infantry: {selected.army.infantry}</Typography>
-                <Typography>Tanks: {selected.army.tanks}</Typography>
-              </>
-            ) : <Typography color="text.secondary">Wybierz gracza w menu</Typography>}
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6">Historia ruchów</Typography>
-            <Box sx={{ maxHeight: 120, overflowY: 'auto', mb: 2 }}>
-              {demoMoves.map((m) => (
-                <Typography key={m.turn} fontSize={14}>Tura {m.turn}: {m.action} ({m.value})</Typography>
-              ))}
-            </Box>
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6">Ranking</Typography>
-            <Box>
-              {demoRanking.map((r, i) => (
-                <Typography key={r.name} fontSize={14}>{i + 1}. {r.name} — {r.score} pkt</Typography>
-              ))}
-            </Box>
-          </Paper>
+          </Box>
+        </Paper>
+
+        {/* Game Phase Instructions */}
+        <Paper elevation={2} sx={{ p: 2, mb: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+          <Typography variant="h6" gutterBottom>
+            {gameState.phase === 'draft' && '🪖 Faza DRAFT - Rozmieść swoje armie'}
+            {gameState.phase === 'attack' && '⚔️ Faza ATTACK - Atakuj terytoria przeciwników'}
+            {gameState.phase === 'fortify' && '🛡️ Faza FORTIFY - Przenoś armie między terytoriami'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {gameState.phase === 'draft' && `Masz ${gameState.armiesToPlace} armii do rozmieszczenia. Kliknij na swoje terytoria aby je rozmieścić.`}
+            {gameState.phase === 'attack' && 'Wybierz swoje terytorium z co najmniej 2 armiami, następnie wybierz sąsiednie terytorium przeciwnika do ataku.'}
+            {gameState.phase === 'fortify' && 'Możesz przesunąć armie między swoimi sąsiadującymi terytoriami. Musi zostać co najmniej 1 armia na każdym terytorium.'}
+          </Typography>
+          {gameState.selectedTerritory && (
+            <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
+              🎯 Wybrane terytorium: {gameState.selectedTerritory.name} ({gameState.selectedTerritory.armies} armii)
+            </Typography>
+          )}
+        </Paper>
+        
+        <Box sx={{ display: 'flex', gap: 3, my: 2 }}>
+          {/* Główna mapa */}
+          <Box sx={{ flex: 2 }}>
+            <Paper elevation={4} sx={{ p: 2, borderRadius: 2 }} className="risk-map-container">
+              <RiskMap 
+                gameState={gameState}
+                players={gameState.players}
+                onTerritoryClick={handleTerritoryClick}
+              />
+            </Paper>
+          </Box>
+
+          {/* Panel kontrolny */}
+          <Box sx={{ flex: 1, minWidth: 300 }}>
+            <GameController
+              gameState={gameState}
+              players={gameState.players}
+              onPlaceArmy={placeArmy}
+              onAttack={handleAttack}
+              onEndTurn={endTurn}
+              onChangePhase={changePhase}
+            />
+          </Box>
         </Box>
       </Container>
     </ThemeProvider>
