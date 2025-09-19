@@ -7,12 +7,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Add your executable
 add_executable(riskit_server 
     src/main.cpp 
-    src/EndpointBase.cpp 
-    src/PlayerEndpoint.cpp 
+    src/Endpoints/EndpointBase.cpp 
+    src/Endpoints/PlayerEndpoint.cpp 
     src/Server.cpp 
-    src/StateEndpoint.cpp 
-    src/HealthEndpoint.cpp 
-    src/RiskEndpoint.cpp
+    src/Endpoints/StateEndpoint.cpp 
+    src/Endpoints/HealthEndpoint.cpp 
+    src/Endpoints/RiskEndpoint.cpp
+)
+
+# Add include directories
+target_include_directories(riskit_server
+    PRIVATE
+#        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/src/Endpoints
 )
 
 # ---------------------------
