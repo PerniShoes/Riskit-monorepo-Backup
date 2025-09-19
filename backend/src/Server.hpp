@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-class Server
+class Server final
 {
 
 public:

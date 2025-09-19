@@ -9,6 +9,8 @@ class EndpointBase : public IEndpoint
 public:
 
     EndpointBase(const std::string& pathOfEndPoint);
+    virtual ~EndpointBase() = default;
+
 
     bool IsMatch(const std::string& path) override;
     std::vector<std::string> Split(const std::string& s,char delim);
