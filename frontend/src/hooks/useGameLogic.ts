@@ -34,7 +34,7 @@ export function useGameLogic(players: Player[]) {
       turn: 1,
       player: 0,
       action: 'draft',
-      message: 'Gra rozpoczęta! Terytoria zostały losowo rozdzielone.',
+      message: 'Gra rozpoczęta! Terytoria zostały LOSOWO rozdzielone.',
       timestamp: Date.now(),
     };
 

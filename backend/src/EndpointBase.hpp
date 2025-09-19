@@ -1,5 +1,5 @@
 #pragma once
-#include "IEndPoint.hpp"
+#include "IEndpoint.hpp"
 #include <vector>
 #include <map>
 #include <functional>
