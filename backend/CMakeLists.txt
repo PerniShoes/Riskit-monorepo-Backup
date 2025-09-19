@@ -13,7 +13,7 @@ add_executable(riskit_server
     src/Endpoints/StateEndpoint.cpp 
     src/Endpoints/HealthEndpoint.cpp 
     src/Endpoints/RiskEndpoint.cpp
-)
+ "src/SystemsManagerDB.cpp")
 
 # Add include directories
 target_include_directories(riskit_server

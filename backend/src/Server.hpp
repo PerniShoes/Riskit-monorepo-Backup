@@ -8,6 +8,10 @@ class Server
 
 public:
     Server(uint16_t port);
+    Server(const Server& other) = delete;
+    Server& operator=(const Server& other) = delete;
+    Server(Server&& other) = delete;
+    Server& operator=(Server&& other) = delete;
     ~Server();
 
     void Run();
