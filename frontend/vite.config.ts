@@ -8,7 +8,7 @@ export default defineConfig({
     // Dev proxy to C++ backend at http://localhost:8081
     proxy: {
       "/api": {
-        target: "http://localhost:8081",
+            target: "http://localhost:8081", // docker works if target is: http://backend:8081 
         changeOrigin: true,
         secure: false,
       },

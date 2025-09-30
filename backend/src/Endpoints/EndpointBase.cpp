@@ -22,9 +22,10 @@ Response EndpointBase::HandleMethod(const Request& request)
     if (it != m_MethodMap.end()) 
     {
         m_RequestPath = request.path;
+        m_RequestBody = request.body; // JSON body for passing data
         return it->second();
     }
-    return {"Unknown method","at: EndpointBase::HandleMethod"};
+    return Response{"Unknown method","at: EndpointBase::HandleMethod"};
 }
 
 bool EndpointBase::IsMatch(const std::string& path) 
@@ -93,7 +94,7 @@ std::vector<std::string> EndpointBase::Split(const std::string& s,char delim)
     return parts;
 };
 
-void EndpointBase::AddMethod(const std::string& name,Response(EndpointBase::* func)())
+void EndpointBase::AddMethod(const std::string& name,Response(EndpointBase::*func)())
 {
     m_MethodMap[name] = [this,func]() { return (this->*func)(); };
 }

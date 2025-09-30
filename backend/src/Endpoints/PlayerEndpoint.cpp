@@ -38,6 +38,10 @@ Response PlayerEndpoint::HGET()
 
 Response PlayerEndpoint::HPOST()
 {
+
+
+
+
     return {"Not implemented yet","PlayerEP"};
 }
 Response PlayerEndpoint::HPUT()

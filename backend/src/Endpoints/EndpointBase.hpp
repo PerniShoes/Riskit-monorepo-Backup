@@ -28,6 +28,7 @@ protected:
     void AddMethod(const std::string& name,Response(EndpointBase::* func)());
 
     std::string m_RequestPath; // For passing parameters, like id
+    std::string m_RequestBody;
     std::string m_PathOfEndPoint;
     std::map<std::string,std::function<Response()>> m_MethodMap;
 

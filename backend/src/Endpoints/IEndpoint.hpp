@@ -6,6 +6,7 @@ struct Request
 {
     std::string method;
     std::string path;
+    std::string body;
 };
 
 struct Response

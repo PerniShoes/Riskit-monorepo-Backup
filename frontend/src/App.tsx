@@ -44,7 +44,7 @@ function App() {
         }
 
         // Add colors and missing properties to players
-        const playersWithColors: Player[] = data.players.map((player: any, index: number) => ({
+        const playersWithColors: Player[] = data.players.map((player: Player, index: number) => ({
           ...player,
           color: playerColors[index % playerColors.length],
           territoriesCount: 0,
@@ -58,6 +58,18 @@ function App() {
         setPlayers([]);
       });
   }, []);
+
+  ///////////////////// FIX or DELETE (testing post) // not done yet
+    //const playerData = { id: 3, name: "John Doe", score: 100 };
+    //fetch("/api/player", {
+    //    method: "POST",
+    //    headers: { "Content-Type": "application/json" },
+    //    body: JSON.stringify(playerData),
+    //})
+    //    .then(res => res.json())
+    //    .then(data => console.log(data));
+
+   ////////////////////////////
 
   const showPlayer = (id: number) => {
     setLoading(true);

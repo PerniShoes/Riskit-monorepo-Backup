@@ -30,6 +30,10 @@ reset-backend:
 	cd .. && rm -rf backend/build && cmake -S backend -B backend/build -G Ninja && cmake --build backend/build
 	$(MAKE) run-backend
 
+	
+# Didn't wanna touch make start so made my own
+restart: restart-backend dev
+
 start: run-backend dev
 
 install:

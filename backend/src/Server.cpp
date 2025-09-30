@@ -130,7 +130,7 @@ void Server::Run()
         }
 
         auto [method,path] = ReadRequestLine(client_fd);
-        Request req{method, path};
+        Request req{method, path,{}};
 
         Response resp{"", "404 Not Found"};
         for (auto& ep : m_Endpoints)

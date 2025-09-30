@@ -13,6 +13,8 @@ add_executable(riskit_server
     src/Endpoints/StateEndpoint.cpp 
     src/Endpoints/HealthEndpoint.cpp 
     src/Endpoints/RiskEndpoint.cpp
+    src/GameState.hpp
+    src/Helpers/Player.hpp
  "src/SystemsManagerDB.cpp")
 
 # Add include directories
@@ -20,6 +22,8 @@ target_include_directories(riskit_server
     PRIVATE
 #        ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/src/Endpoints
+        ${CMAKE_SOURCE_DIR}/src/Helpers
+         ${CMAKE_SOURCE_DIR}/src
 )
 
 # ---------------------------

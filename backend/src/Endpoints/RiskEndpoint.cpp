@@ -14,7 +14,7 @@ Response RiskEndpoint::HGET()
     using ordered_json = nlohmann::ordered_json;
     ordered_json risk;
 
-    double p = 0.25 + (std::rand() % 751) / 4000.0;
+    double p = 0.25 + (std::rand() % 751) / 400.0;
     risk["risk"] = {{"risk", "sector_threat"}, {"probability", p}};
 
     return {risk.dump(4), "200 OK"};

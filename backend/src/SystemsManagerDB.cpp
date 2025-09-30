@@ -1,6 +1,8 @@
 #include "SystemsManagerDB.hpp"
 
 
+// Might be a useless class
+
 SystemsManagerDB::SystemsManagerDB()
 
 {
