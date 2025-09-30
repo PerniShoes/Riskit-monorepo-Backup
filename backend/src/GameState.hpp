@@ -9,10 +9,16 @@ class GameState
     // Have one GameState instance in main.cpp and then pass it by reference everywhere needed (main->server->endpoints)
     // Split into hpp and cpp files
     // Have classes/structs for player/map etc. be seperate files and just store them here
-    // Include GameState in cpp files of those, store GameState& there (through constructor)
+    // Just have PlayerManager class, MapManager class and so on. They will store all the data related to them and manipulate it
     // 
-    // Have something like this:  PlayerFunctions Player{*this}; allowing for "namespace like" behaviour, not showing everything all the time
-    // EndPoints will just have GameState included and stored and will be able to access shit like: m_State.PlayerF.Add(id);
+    // GameState will be a "SystemsManager" Pretty much.  In endpoint you could just call appropriate methods, e.g.: In playerEndPoint when some
+    // player gets something, you could do: m_State.Players.UpdateIncome(id, amount); This seems best (no exposing everything, soooome more typing
+    // but allows GameState to stay clean and neat 
+    // 
+    // 
+    // 
+    // Include GameState in cpp files of managers, store GameState& there (through constructor)
+    // 
 
     // https://chatgpt.com/c/68dbf04c-f694-832a-bc87-b44273a26635 maybe some insight here (prolly not needed)
 
@@ -61,6 +67,7 @@ public:
     };
 
     // Actual game data
+    // WILL NOT BE HERE 
     std::vector<Player> players;
     std::map<int,int> fieldOwner;
 
