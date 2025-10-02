@@ -11,6 +11,7 @@ public:
     EndpointBase(const std::string& pathOfEndPoint);
     virtual ~EndpointBase() = default;
 
+    void SetSystemsManager(SystemsManagerDB* systemsManager) override;
 
     bool IsMatch(const std::string& path) override;
     std::vector<std::string> Split(const std::string& s,char delim);
@@ -31,6 +32,6 @@ protected:
     std::string m_RequestBody;
     std::string m_PathOfEndPoint;
     std::map<std::string,std::function<Response()>> m_MethodMap;
-
+    SystemsManagerDB* systemsPtr=nullptr; // Without m_ for convenience
 
 };

@@ -1,11 +1,12 @@
 #include "EndpointBase.hpp"
 #include <vector>
-
+#include <iostream>
+#include <print>
 
 EndpointBase::EndpointBase(const std::string& pathOfEndPoint)
     : m_PathOfEndPoint(pathOfEndPoint)
 {
-    
+
     // All avaialbe methods (not all implemented yet)
     AddMethod("GET",&EndpointBase::HGET);
     AddMethod("POST",&EndpointBase::HPOST);
@@ -97,4 +98,8 @@ std::vector<std::string> EndpointBase::Split(const std::string& s,char delim)
 void EndpointBase::AddMethod(const std::string& name,Response(EndpointBase::*func)())
 {
     m_MethodMap[name] = [this,func]() { return (this->*func)(); };
+}
+void EndpointBase::SetSystemsManager(SystemsManagerDB* systemsManager)
+{
+    systemsPtr = systemsManager;
 }

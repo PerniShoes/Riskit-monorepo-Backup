@@ -3,11 +3,13 @@
 #include <cstdlib>
 #include <nlohmann/json.hpp>
 #include <iostream>
+#include <print>
 
 StateEndpoint::StateEndpoint()
     : EndpointBase("/api/state")
 {
-   
+
+ 
 }
 
 Response StateEndpoint::HGET()

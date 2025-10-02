@@ -72,6 +72,6 @@ public:
     std::map<int,int> fieldOwner;
 
     // Expose namespaces-like access
-    PlayerFunctions Player{*this};
+    PlayerFunctions Player{*this}; // Managers
     MapFunctions Map{*this};
 };

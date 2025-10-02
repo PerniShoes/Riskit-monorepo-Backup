@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.15)
 project(riskit_backend VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add your executable
@@ -15,7 +15,7 @@ add_executable(riskit_server
     src/Endpoints/RiskEndpoint.cpp
     src/GameState.hpp
     src/Helpers/Player.hpp
- "src/SystemsManagerDB.cpp")
+ "src/SystemsManagerDB.cpp" "src/Systems/StateManager.cpp"  "src/Systems/PlayerManager.cpp"  "src/Systems/MapManager.cpp")
 
 # Add include directories
 target_include_directories(riskit_server
@@ -24,6 +24,7 @@ target_include_directories(riskit_server
         ${CMAKE_SOURCE_DIR}/src/Endpoints
         ${CMAKE_SOURCE_DIR}/src/Helpers
          ${CMAKE_SOURCE_DIR}/src
+         ${CMAKE_SOURCE_DIR}/src/Systems
 )
 
 # ---------------------------

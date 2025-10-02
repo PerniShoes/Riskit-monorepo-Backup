@@ -1,13 +1,13 @@
 #include "SystemsManagerDB.hpp"
 
-
-// Might be a useless class
+#include <iostream>
+#include <print>
 
 SystemsManagerDB::SystemsManagerDB()
 
 {
     InitSystems();
-
+     
 
 
 }
@@ -20,9 +20,25 @@ SystemsManagerDB::~SystemsManagerDB()
 
 void SystemsManagerDB::InitSystems()
 {
+    MapM = std::make_unique<MapManager>(*this);
+    PlayerM = std::make_unique<PlayerManager>(*this);
+    StateM = std::make_unique<StateManager>(*this);
+    
+
 
 }
 void SystemsManagerDB::Close()
 {
 
+}
+
+void SystemsManagerDB::TestGround()
+{
+ 
+
+    PlayerM->AddPlayer({});
+
+  
+
+    std::println("{}",PlayerM->GetPlayerAmount());
 }

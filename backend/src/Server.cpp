@@ -1,6 +1,7 @@
 #include "Server.hpp"
 
 #include <iostream>
+#include <print>
 #include <cstring>
 #include <cstdlib>
 
@@ -16,10 +17,15 @@
 #include <arpa/inet.h>
 #endif
 
-Server::Server(uint16_t port)
+Server::Server(uint16_t port,SystemsManagerDB* systemsManager)
     : m_Port(port)
+    ,m_SystemsManagerPtr(systemsManager)
 {
     PlatformStartup();
+    if (m_SystemsManagerPtr == nullptr)
+    {
+        std::println("Crash and die, systemsManager is nullptr in Server");
+    }
 }
 
 Server::~Server()
@@ -76,6 +82,11 @@ void Server::SendResponse(int client_fd,const Response& resp)
 
 void Server::RegisterEndpoint(std::unique_ptr<IEndpoint> endpoint)
 {
+    if (m_SystemsManagerPtr == nullptr)
+    {
+        std::println("Crash and die, systemsManager is nullptr in Server during Endpoint registration");
+    }
+    endpoint->SetSystemsManager(m_SystemsManagerPtr);
     m_Endpoints.push_back(std::move(endpoint));
 }
 

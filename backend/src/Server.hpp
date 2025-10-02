@@ -2,12 +2,13 @@
 #include "IEndpoint.hpp"
 #include <vector>
 #include <memory>
+#include "SystemsManagerDB.hpp"
 
 class Server final
 {
 
 public:
-    Server(uint16_t port);
+    Server(uint16_t port,SystemsManagerDB* systemsManager);
     Server(const Server& other) = delete;
     Server& operator=(const Server& other) = delete;
     Server(Server&& other) = delete;
@@ -32,5 +33,6 @@ private:
     void PlatformStartup();
     void PlatformCleanup();
     int PlatformClose(int fd);
+    SystemsManagerDB* m_SystemsManagerPtr = nullptr;
 
 };

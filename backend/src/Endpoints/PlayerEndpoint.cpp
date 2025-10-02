@@ -1,5 +1,8 @@
 #include "PlayerEndpoint.hpp"
 #include <nlohmann/json.hpp>
+#include <iostream>
+#include <print>
+#include "SystemsManagerDB.hpp"
 
 PlayerEndpoint::PlayerEndpoint()
    :EndpointBase("/api/player/:id")
@@ -17,6 +20,9 @@ Response PlayerEndpoint::HGET()
     int id = 0;
     try { id = std::stoi(idStr); }
     catch (...) { id = 0; }
+
+    Player test{}; // TEST
+    systemsPtr->PlayerM->AddPlayer(test);
     
     // FIX (hardcoded id)
     if (id >= 1 && id <= 3)
