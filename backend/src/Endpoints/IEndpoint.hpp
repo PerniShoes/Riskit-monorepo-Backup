@@ -15,9 +15,14 @@ struct Request
         {
             return nlohmann::json::object();
         }
-        else
+
+        try
         {
             return nlohmann::json::parse(body);
+        }
+        catch (const nlohmann::json::parse_error& e)
+        {
+            return nlohmann::json::object(); // fallback
         }
     }
 };

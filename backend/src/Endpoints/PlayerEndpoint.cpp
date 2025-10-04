@@ -44,37 +44,25 @@ Response PlayerEndpoint::HGET()
     }
 
     // FIX (hardcoded id)
-    if (id >= 1 && id <= 100)
+    if (id >= 1 && id <= systemsPtr->PlayerM->GetPlayerAmount())
     {
         ordered_json player;
-        player["id"] = id;
-        player["name"] = "Player" + std::to_string(id);
-        player["color"] = "Color" + std::to_string(id % 10); 
-        player["gold"] = 500 + id * 50;
-        player["army"] = {{"infantry", 100 + id * 10}, {"tanks", 5 + id}};
-        player["territoriesCount"] = id % 5;
-        player["continentsControlled"] = {"Continent" + std::to_string(id % 3)};
+        player = systemsPtr->PlayerM->GetPlayerJson(id,false);
 
         return Response{player.dump(4), "200 OK"};
     }
     else
     {
-        ordered_json err = {{"error", "player_not_found"}};
-        return {err.dump(4), "Id passed: "+ std::to_string(id) + " 404 Not Found in PlayerEndpoint"};
+        ordered_json err = {{"error", "player_not_found"}, {"id", id}};
+        return {err.dump(4), "404 Not Found"};
     } 
 }
 
 Response PlayerEndpoint::HPOST()
 {
-   // systemsPtr->PlayerM->AddPlayer(m_Request.json());
-   // Both of those comented out lines cause the server to crash
-
-
-
-    return Response{"{\"message\":\"POST reached\"}", "201 Created"};
-
-   // Both of those comented out lines cause the server to crash
-   // return Response{systemsPtr->PlayerM->GetPlayerJson(0,true).dump(),"201 Created"};
+    systemsPtr->PlayerM->AddPlayer(m_Request.json());
+   
+    return Response{systemsPtr->PlayerM->GetPlayerJson(0,true).dump(),"201 Created"};
 }
 Response PlayerEndpoint::HPUT()
 {

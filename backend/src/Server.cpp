@@ -57,25 +57,71 @@ std::string Server::ReadLine(int client_fd)
     }
     return line;
 }
-std::tuple<std::string, std::string, std::string> Server::ReadRequestLine(int client_fd)
+std::tuple<std::string,std::string,std::string> Server::ReadRequestLine(int client_fd)
 {
-
+    // 1. Read request line
     std::string line = ReadLine(client_fd);
     auto first_space = line.find(' ');
     if (first_space == std::string::npos) return {"", "", ""};
-    auto second_space = line.find(' ', first_space + 1);
-    std::string method = line.substr(0, first_space);
-    std::string path = (second_space == std::string::npos)
-                           ? line.substr(first_space + 1)
-                           : line.substr(first_space + 1, second_space - first_space - 1);
+    auto second_space = line.find(' ',first_space + 1);
 
-    char buffer[1024];
-    int n = recv(client_fd,buffer,sizeof(buffer),0);
+    std::string method = line.substr(0,first_space);
+    std::string path = (second_space == std::string::npos)
+        ? line.substr(first_space + 1)
+        : line.substr(first_space + 1,second_space - first_space - 1);
+
+    // 2. Read headers
+    std::map<std::string,std::string> headers;
+    while (true)
+    {
+        std::string headerLine = ReadLine(client_fd);
+        if (headerLine.empty()) break; // empty line = end of headers
+
+        auto colon = headerLine.find(':');
+        if (colon != std::string::npos)
+        {
+            std::string key = headerLine.substr(0,colon);
+            std::string value = headerLine.substr(colon + 1);
+            // trim spaces
+            while (!value.empty() && value[0] == ' ') value.erase(0,1);
+
+            // CASE NORMALIZATION for safety
+            std::transform(key.begin(),key.end(),key.begin(),::tolower);
+
+            headers[key] = value;
+        }
+    }
+
+    // 3. Read body if Content-Length exists
     std::string body;
-    if (n > 0) body.assign(buffer,n);
+    if (headers.count("Content-Length"))
+    {
+        int len = std::stoi(headers["Content-Length"]);
+        body.resize(len);
+        int totalRead = 0;
+        while (totalRead < len)
+        {
+            int n = recv(client_fd,&body[totalRead],len - totalRead,0);
+            if (n <= 0) break; // error or closed
+            totalRead += n;
+        }
+    }
+    if (headers.count("content-length"))
+    {
+        int len = std::stoi(headers["content-length"]);
+        body.resize(len);
+        int totalRead = 0;
+        while (totalRead < len)
+        {
+            int n = recv(client_fd,&body[totalRead],len - totalRead,0);
+            if (n <= 0) break; // error or closed
+            totalRead += n;
+        }
+    }
 
     return {method, path, body};
 }
+
 
 void Server::SendResponse(int client_fd,const Response& resp)
 {

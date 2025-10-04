@@ -19,9 +19,7 @@ PlayerManager::~PlayerManager()
 
 void PlayerManager::AddPlayer(const nlohmann::json& newPlayer)
 {
-
     m_Players.push_back(FromJson(newPlayer));
-    
 }
 int PlayerManager::GetPlayerAmount()const
 {
@@ -50,11 +48,10 @@ Player PlayerManager::FromJson(const nlohmann::json& jsonInput)
 {
     Player p;
 
-    // Simple fields
-    p.id = jsonInput.at("id").get<int>();
-    p.name = jsonInput.at("name").get<std::string>();
-    p.color = jsonInput.at("color").get<std::string>();
-    p.gold = jsonInput.at("gold").get<int>();
+    p.id = jsonInput.value("id",-1);                 // -1 missing ID
+    p.name = jsonInput.value("name","Unknown");
+    p.color = jsonInput.value("color","#000000");
+    p.gold = jsonInput.value("gold",0);
 
     // Army: map<string,int>
     if (jsonInput.contains("army") && jsonInput["army"].is_object())
@@ -65,11 +62,12 @@ Player PlayerManager::FromJson(const nlohmann::json& jsonInput)
         }
     }
 
-    p.territoriesCount = jsonInput.value("territoriesCount",0); // default to 0 if missing
+    p.territoriesCount = jsonInput.value("territoriesCount",0); // default to 0
 
     if (jsonInput.contains("continentsControlled") && jsonInput["continentsControlled"].is_array())
     {
         p.continentsControlled = jsonInput["continentsControlled"].get<std::vector<std::string>>();
     }
+
     return p;
 }
