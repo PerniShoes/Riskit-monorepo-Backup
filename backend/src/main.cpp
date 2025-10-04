@@ -23,8 +23,6 @@ int main()
     server.RegisterEndpoint(std::make_unique<HealthEndpoint>());
     server.RegisterEndpoint(std::make_unique<RiskEndpoint>());
 
-    g_SystemsManger.TestGround();
-
     server.Run();
 }
 

@@ -1,5 +1,4 @@
 #pragma once
-//#include "SystemsManagerDB.hpp"
 
 class SystemsManagerDB;
 
@@ -12,10 +11,11 @@ public:
     ~MapManager();
 
     int GetFieldsAmount()const;
-    int m_FieldsAmount;
+    void ParsePrintPlayers(int playerCount);
 
 private:
 
     SystemsManagerDB& m_SystemsManager;
+    int m_FieldsAmount;
 
 };

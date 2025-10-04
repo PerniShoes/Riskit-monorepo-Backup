@@ -32,61 +32,111 @@ function App() {
   } = useGameLogic(players);
 
   useEffect(() => {
-    fetch('/api/state')
-      .then((r) => r.json())
-      .then((data) => {
-        console.log("Fetched state:", data);
+      fetch('/api/state')
+          .then((r) => r.json())
+          .then((data) => {
+              console.log("Fetched state:", data);
 
-        if (!data || !Array.isArray(data.players)) {
-          console.error("Invalid /api/state response: expected { players: Player[] }, got:", data);
-          setPlayers([]);
-          return;
-        }
+              if (!data || !Array.isArray(data.players)) {
+                  console.error("Invalid /api/state response: expected { players: Player[] }, got:", data);
+                  setPlayers([]);
+                  return;
+              }
 
-        // Add colors and missing properties to players
-        const playersWithColors: Player[] = data.players.map((player: Player, index: number) => ({
-          ...player,
-          color: playerColors[index % playerColors.length],
+              // Add colors and missing properties to players
+              const playersWithColors: Player[] = data.players.map((player: Player, index: number) => ({
+                  ...player,
+                  color: playerColors[index % playerColors.length],
+                  territoriesCount: 0,
+                  continentsControlled: []
+              }));
+
+              setPlayers(playersWithColors);
+          })
+          .catch((err) => {
+              console.error("Failed to fetch /api/state:", err);
+              setPlayers([]);
+          });
+
+      const playerData = {
+          id: 10,
+          name: "John Doe",
+          color: "red",
+          gold: 100,
+          army: { infantry: 50, tanks: 5 },
           territoriesCount: 0,
-          continentsControlled: []
-        }));
+          continentsControlled: ["Europe"]
+      };
 
-        setPlayers(playersWithColors);
+      fetch("/api/player", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(playerData),
       })
-      .catch((err) => {
-        console.error("Failed to fetch /api/state:", err);
-        setPlayers([]);
-      });
+          .then(async (res) => {
+              const text = await res.text(); // read raw response text
+              let data;
+              try {
+                  data = JSON.parse(text); // try parsing as JSON
+              } catch {
+                  data = text; // fallback to raw text if not JSON
+              }
+
+              if (!res.ok) {
+                  // Log failure details
+                  console.error("Request failed:", res.status, res.statusText);
+                  console.error("Response body:", data);
+              } else {
+                  console.log("Success:", data);
+              }
+          })
+          .catch((err) => {
+              console.error("Fetch error:", err);
+          });
   }, []);
 
-  ///////////////////// FIX or DELETE (testing post) // not done yet
-    //const playerData = { id: 3, name: "John Doe", score: 100 };
-    //fetch("/api/player", {
-    //    method: "POST",
-    //    headers: { "Content-Type": "application/json" },
-    //    body: JSON.stringify(playerData),
-    //})
-    //    .then(res => res.json())
-    //    .then(data => console.log(data));
+    //    ///////////////////// FIX or DELETE (testing post) // not done yet
+
+
 
    ////////////////////////////
 
-  const showPlayer = (id: number) => {
-    setLoading(true);
-    fetch(`/api/player/${id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const playerWithColor = {
-          ...data,
-          color: playerColors[(id - 1) % playerColors.length],
-          territoriesCount: 0,
-          continentsControlled: []
-        };
-        console.log("Selected player:", playerWithColor);
-      })
-      .catch(() => console.error("Failed to fetch player"))
-      .finally(() => setLoading(false));
-  };
+    const showPlayer = (id: number) => {
+        setLoading(true);
+
+        fetch(`/api/player/${id}`)
+            .then(async (res) => {
+                const text = await res.text(); // read raw response text
+                let data: object | string;
+                try {
+                    data = JSON.parse(text); // try parsing as JSON
+                } catch (err) {
+                    console.error("Failed to parse JSON:", err, "Raw response:", text);
+                    data = text; // fallback to raw text
+                }
+
+                if (!res.ok) {
+                    console.error("Request failed:", res.status, res.statusText);
+                    console.error("Response body:", data);
+                } else {
+                    if (typeof data === "object") {
+                        const playerWithColor = {
+                            ...data,
+                            color: playerColors[(id - 1) % playerColors.length],
+                            territoriesCount: 0,
+                            continentsControlled: []
+                        };
+                        console.log(`Selected player (id: ${id}):`, playerWithColor);
+                    } else {
+                        console.error("Expected JSON object but got:", data);
+                    }
+                }
+            })
+            .catch((err) => console.error("Fetch error:", err))
+            .finally(() => setLoading(false));
+    };
+
+
 
   const handleTerritoryClick = (territory: Territory) => {
     selectTerritory(territory);

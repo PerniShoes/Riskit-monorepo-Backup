@@ -28,7 +28,7 @@ private:
 
     void SendResponse(int client_fd,const Response& resp);
     std::string ReadLine(int client_fd);
-    std::pair<std::string,std::string> ReadRequestLine(int client_fd);    
+    std::tuple<std::string,std::string,std::string> ReadRequestLine(int client_fd);
 
     void PlatformStartup();
     void PlatformCleanup();

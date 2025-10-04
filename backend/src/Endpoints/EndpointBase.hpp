@@ -19,17 +19,16 @@ public:
 
     Response HandleMethod(const Request& request)override;
 
-    virtual Response HGET() = 0;
-    virtual Response HPOST() = 0;
-    virtual Response HPUT() = 0;
-    virtual Response HDELETE() = 0;
+    virtual Response HGET();
+    virtual Response HPOST();
+    virtual Response HPUT();
+    virtual Response HDELETE();
 
 protected:
 
     void AddMethod(const std::string& name,Response(EndpointBase::* func)());
 
-    std::string m_RequestPath; // For passing parameters, like id
-    std::string m_RequestBody;
+    Request m_Request;
     std::string m_PathOfEndPoint;
     std::map<std::string,std::function<Response()>> m_MethodMap;
     SystemsManagerDB* systemsPtr=nullptr; // Without m_ for convenience

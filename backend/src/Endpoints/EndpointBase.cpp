@@ -22,58 +22,123 @@ Response EndpointBase::HandleMethod(const Request& request)
     auto it = m_MethodMap.find(request.method);
     if (it != m_MethodMap.end()) 
     {
-        m_RequestPath = request.path;
-        m_RequestBody = request.body; // JSON body for passing data
+        m_Request = request;
         return it->second();
+
     }
     return Response{"Unknown method","at: EndpointBase::HandleMethod"};
 }
-
-bool EndpointBase::IsMatch(const std::string& path) 
+bool EndpointBase::IsMatch(const std::string& path)
 {
-    // Split paths by '/'
     auto reqParts = Split(path,'/');
     auto patternParts = Split(m_PathOfEndPoint,'/');
 
-    if (reqParts.size() != patternParts.size()) return false;
+    size_t offsetPattern = (patternParts.size() > 0 && patternParts[0].empty()) ? 1 : 0;
+    size_t offsetReq = (reqParts.size() > 0 && reqParts[0].empty()) ? 1 : 0;
 
-    // Compare each part
-    for (size_t i = 0; i < reqParts.size(); ++i)
+    size_t iPattern = offsetPattern;
+    size_t iReq = offsetReq;
+
+    // Walk through both vectors, consuming parts as we go
+    while (iPattern < patternParts.size() && iReq < reqParts.size())
     {
-        // Skip pattern parameters like ":id"
-        if (!patternParts[i].empty() && patternParts[i][0] == ':') continue;
+        const std::string& p = patternParts[iPattern];
+        if (p.empty()) { ++iPattern; continue; }
 
-        if (reqParts[i] != patternParts[i]) return false;
+        if (p[0] == ':')
+        {
+            // parameter (maybe optional)
+            std::string name = p.substr(1);
+            bool optional = false;
+            if (!name.empty() && name.back() == '?')
+            {
+                optional = true;
+                name.pop_back();
+            }
+
+            // If there's a request part available, treat it as the param value (consume)
+            // If there's no request part and param is optional, skip the pattern part (don't consume req)
+            if (iReq < reqParts.size())
+            {
+                ++iPattern; ++iReq;
+            }
+            else
+            {
+                if (optional)
+                {
+                    ++iPattern; // skip optional parameter
+                    // iReq unchanged
+                }
+                else
+                {
+                    return false; // required param missing
+                }
+            }
+        }
+        else
+        {
+            // literal must match exactly and consume a request part
+            if (reqParts[iReq] != p) return false;
+            ++iPattern; ++iReq;
+        }
     }
+
+    // If there are leftover pattern parts, they must all be optional params or empty
+    while (iPattern < patternParts.size())
+    {
+        const std::string& p = patternParts[iPattern];
+        if (p.empty()) { ++iPattern; continue; }
+        if (p[0] == ':')
+        {
+            std::string name = p.substr(1);
+            if (!name.empty() && name.back() == '?') { ++iPattern; continue; }
+        }
+        // literal or required param remaining => no match
+        return false;
+    }
+
+    // If there are leftover request parts (request longer than pattern) => no match
+    if (iReq < reqParts.size()) return false;
 
     return true;
 }
 
 std::string EndpointBase::ExtractParam(const std::string& name)
 {
-    // Split pattern and request path by '/'
     auto patternParts = Split(m_PathOfEndPoint,'/');
-    auto reqParts = Split(m_RequestPath,'/');
+    auto reqParts = Split(m_Request.path,'/');
 
-    if (patternParts.size() != reqParts.size())
-    {
-        return "Request path doesn't match";
-    }
+    size_t offsetPattern = (patternParts.size() > 0 && patternParts[0].empty()) ? 1 : 0;
+    size_t offsetReq = (reqParts.size() > 0 && reqParts[0].empty()) ? 1 : 0;
 
-    // Look for the target parameter in the pattern
-    for (size_t i = 0; i < patternParts.size(); ++i)
+    for (size_t i = 0; i + offsetPattern < patternParts.size(); ++i)
     {
-        if (!patternParts[i].empty() && patternParts[i][0] == ':')
+        const std::string& p = patternParts[i + offsetPattern];
+        if (p.empty() || p[0] != ':') continue;
+
+        std::string paramName = p.substr(1);
+        bool optional = false;
+
+        if (!paramName.empty() && paramName.back() == '?')
         {
-            std::string paramName = patternParts[i].substr(1); // remove ':'
-            if (paramName == name)
-            {
-                return reqParts[i]; 
-            }
+            optional = true;
+            paramName.pop_back();
+        }
+
+        if (paramName == name)
+        {
+            size_t reqIndex = i + offsetReq;
+
+            if (reqIndex < reqParts.size() && !reqParts[reqIndex].empty())
+                return reqParts[reqIndex];   // normal value present
+            else if (optional)
+                return "-1";                 // optional param missing
+            else
+                return "-2";                 // required param missing
         }
     }
 
-    return "Parameter not found";
+    return "-3"; // param not found at all
 }
 
 
@@ -103,3 +168,24 @@ void EndpointBase::SetSystemsManager(SystemsManagerDB* systemsManager)
 {
     systemsPtr = systemsManager;
 }
+
+
+Response EndpointBase::HGET()
+{
+    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+}
+
+Response EndpointBase::HPOST()
+{
+    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+}
+Response EndpointBase::HPUT()
+{
+    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+}
+Response EndpointBase::HDELETE()
+{
+    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+}
+
+

@@ -31,14 +31,3 @@ void SystemsManagerDB::Close()
 {
 
 }
-
-void SystemsManagerDB::TestGround()
-{
- 
-
-    PlayerM->AddPlayer({});
-
-  
-
-    std::println("{}",PlayerM->GetPlayerAmount());
-}

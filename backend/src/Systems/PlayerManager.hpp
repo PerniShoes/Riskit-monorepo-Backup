@@ -1,9 +1,9 @@
 #pragma once
-//#include "SystemsManagerDB.hpp"
 #include <vector>
-#include "Player.hpp"
+#include <nlohmann/json.hpp>
 
 class SystemsManagerDB;
+struct Player;
 
 class PlayerManager final
 {
@@ -13,8 +13,12 @@ public:
     PlayerManager(SystemsManagerDB& systemsManager);
     ~PlayerManager();
     
-    void AddPlayer(Player newPlayer);
+    void AddPlayer(const nlohmann::json& newPlayer);
+    Player GetPlayerData(int id, bool lastPlayerAdded = false) const;
+    const nlohmann::json GetPlayerJson(int id,bool lastPlayerAdded = false) const;
     int GetPlayerAmount()const;
+
+    Player FromJson(const nlohmann::json& jsonInput);
 
 
 private:

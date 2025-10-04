@@ -18,7 +18,7 @@
 #endif
 
 Server::Server(uint16_t port,SystemsManagerDB* systemsManager)
-    : m_Port(port)
+    :m_Port(port)
     ,m_SystemsManagerPtr(systemsManager)
 {
     PlatformStartup();
@@ -57,17 +57,26 @@ std::string Server::ReadLine(int client_fd)
     }
     return line;
 }
-std::pair<std::string,std::string> Server::ReadRequestLine(int client_fd)
+std::tuple<std::string, std::string, std::string> Server::ReadRequestLine(int client_fd)
 {
+
     std::string line = ReadLine(client_fd);
     auto first_space = line.find(' ');
-    if (first_space == std::string::npos) return {"",""};
-    auto second_space = line.find(' ',first_space + 1);
-    std::string method = line.substr(0,first_space);
-    std::string path = (second_space == std::string::npos) ? line.substr(first_space + 1)
-        : line.substr(first_space + 1,second_space - first_space - 1);
-    return {method, path};
+    if (first_space == std::string::npos) return {"", "", ""};
+    auto second_space = line.find(' ', first_space + 1);
+    std::string method = line.substr(0, first_space);
+    std::string path = (second_space == std::string::npos)
+                           ? line.substr(first_space + 1)
+                           : line.substr(first_space + 1, second_space - first_space - 1);
+
+    char buffer[1024];
+    int n = recv(client_fd,buffer,sizeof(buffer),0);
+    std::string body;
+    if (n > 0) body.assign(buffer,n);
+
+    return {method, path, body};
 }
+
 void Server::SendResponse(int client_fd,const Response& resp)
 {
     std::string data;
@@ -140,10 +149,12 @@ void Server::Run()
             continue;
         }
 
-        auto [method,path] = ReadRequestLine(client_fd);
-        Request req{method, path,{}};
+        auto [method,path,body] = ReadRequestLine(client_fd);
 
-        Response resp{"", "404 Not Found"};
+        // FIX
+        Request req{method,path,body};
+
+        Response resp{"Doesn't match any path", "404 Not Found, Server.cpp"};
         for (auto& ep : m_Endpoints)
         {
             if (ep->IsMatch(path))
