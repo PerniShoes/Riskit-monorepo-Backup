@@ -1,4 +1,4 @@
-
+#pragma once
 #include "StateEndpoint.hpp"
 #include "PlayerEndpoint.hpp"
 #include "HealthEndpoint.hpp"

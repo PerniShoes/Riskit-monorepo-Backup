@@ -9,14 +9,10 @@
 #include "Server.hpp"
 #include "SystemsManagerDB.hpp"
 
-// CAUTION: Each SystemsManagerDB object has their own, seperate systems. 
-// ALSO: Using multiple Managers was NOT tested (Will probably work)
-SystemsManagerDB g_SystemsManger{};
-
 int main()
 {
-
-    Server server(8081,&g_SystemsManger);
+    SystemsManagerDB systemsManger{};
+    Server server(8081,&systemsManger);
 
     server.RegisterEndpoint(std::make_unique<PlayerEndpoint>());
     server.RegisterEndpoint(std::make_unique<StateEndpoint>());
@@ -24,17 +20,5 @@ int main()
     server.RegisterEndpoint(std::make_unique<RiskEndpoint>());
 
     server.Run();
+    return 0;
 }
-
-
-// THING NOT IMPLEMENTED YET:
-// 
-// 
-//        if (method == "POST")
-//        {
-//            if (path == "/api/health")
-//            {
-//                // TODO: implement POST health if needed
-//            }
-//        }
-//

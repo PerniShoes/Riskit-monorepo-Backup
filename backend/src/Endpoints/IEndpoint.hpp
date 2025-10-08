@@ -20,9 +20,9 @@ struct Request
         {
             return nlohmann::json::parse(body);
         }
-        catch (const nlohmann::json::parse_error& e)
+        catch (const nlohmann::json::parse_error&)
         {
-            return nlohmann::json::object(); // fallback
+            return nlohmann::json::object(); // Fallback
         }
     }
 };

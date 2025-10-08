@@ -169,7 +169,6 @@ void EndpointBase::SetSystemsManager(SystemsManagerDB* systemsManager)
     systemsPtr = systemsManager;
 }
 
-
 Response EndpointBase::HGET()
 {
     return {"Current Endpoint doesn't support this","405 Method Not Allowed"};

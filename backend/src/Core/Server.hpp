@@ -17,7 +17,7 @@ public:
 
     void Run();
     void RegisterEndpoint(std::unique_ptr<IEndpoint> endPoint);
-
+    std::vector<IEndpoint*> GetEndpoints() const; // Debug or tests
 
 private:
     uint16_t m_Port;

@@ -61,41 +61,41 @@ function App() {
 
       // Lookup cheatsheet of post and get
 
-      //const playerData = {
-      //    id: 10,
-      //    name: "John Doe",
-      //    color: "red",
-      //    gold: 100,
-      //    army: { infantry: 50, tanks: 5 },
-      //    territoriesCount: 0,
-      //    continentsControlled: ["Europe"]
-      //};
+      const playerData = {
+          id: 10,
+          name: "John Doe",
+          color: "red",
+          gold: 100,
+          army: { infantry: 50, tanks: 5 },
+          territoriesCount: 0,
+          continentsControlled: ["Europe"]
+      };
 
-      //fetch("/api/player", {
-      //    method: "POST",
-      //    headers: { "Content-Type": "application/json" },
-      //    body: JSON.stringify(playerData),
-      //})
-      //    .then(async (res) => {
-      //        const text = await res.text(); // read raw response text
-      //        let data;
-      //        try {
-      //            data = JSON.parse(text); // try parsing as JSON
-      //        } catch {
-      //            data = text; // fallback to raw text if not JSON
-      //        }
+      fetch("/api/player", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(playerData),
+      })
+          .then(async (res) => {
+              const text = await res.text(); // read raw response text
+              let data;
+              try {
+                  data = JSON.parse(text); // try parsing as JSON
+              } catch {
+                  data = text; // fallback to raw text if not JSON
+              }
 
-      //        if (!res.ok) {
-      //            // Log failure details
-      //            console.error("Request failed:", res.status, res.statusText);
-      //            console.error("Response body:", data);
-      //        } else {
-      //            console.log("Success:", data);
-      //        }
-      //    })
-      //    .catch((err) => {
-      //        console.error("Fetch error:", err);
-      //    });
+              if (!res.ok) {
+                  // Log failure details
+                  console.error("Request failed:", res.status, res.statusText);
+                  console.error("Response body:", data);
+              } else {
+                  console.log("Success:", data);
+              }
+          })
+          .catch((err) => {
+              console.error("Fetch error:", err);
+          });
 
       //fetch(`/api/player/10`)
   }, []);

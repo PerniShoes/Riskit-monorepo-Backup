@@ -241,3 +241,13 @@ int Server::PlatformClose(int fd)
     return close(fd);
 #endif
 }
+
+std::vector<IEndpoint*> Server::GetEndpoints() const
+{
+    std::vector<IEndpoint*> result;
+    for (const auto& ep : m_Endpoints)
+    {
+        result.push_back(ep.get());
+    }
+    return result;
+}

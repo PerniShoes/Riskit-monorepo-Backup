@@ -5,7 +5,7 @@
 #include "SystemsManagerDB.hpp"
 
 PlayerEndpoint::PlayerEndpoint()
-    :EndpointBase("/api/player/:id?")
+    :EndpointBase("/api/player/:id?") 
 {
     // :EndpointBase("/api/player/:id?")
     // :EndpointBase("/api/player")
@@ -44,6 +44,7 @@ Response PlayerEndpoint::HGET()
     }
 
     // FIX (hardcoded id)
+    // Don't allow 0 id
     if (id >= 1 && id <= systemsPtr->PlayerM->GetPlayerAmount())
     {
         ordered_json player;

@@ -6,8 +6,8 @@
 struct Player
 {
     int id{-1};
-    std::string name{"n/a"};
-    std::string color{"n/a"};
+    std::string name{"None"};
+    std::string color{"None"};
     int gold{-1};
 
     // army as a map of unit -> count

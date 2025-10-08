@@ -4,34 +4,66 @@ project(riskit_backend VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add your executable
-add_executable(riskit_server 
-    src/main.cpp 
+# Shared sources
+set(COMMON_SOURCES
     src/Endpoints/EndpointBase.cpp 
     src/Endpoints/PlayerEndpoint.cpp 
-    src/Server.cpp 
+    src/Core/Server.cpp 
     src/Endpoints/StateEndpoint.cpp 
     src/Endpoints/HealthEndpoint.cpp 
     src/Endpoints/RiskEndpoint.cpp
-    src/GameState.hpp
     src/Helpers/Player.hpp
- "src/SystemsManagerDB.cpp" "src/Systems/StateManager.cpp"  "src/Systems/PlayerManager.cpp"  "src/Systems/MapManager.cpp")
+    src/Core/SystemsManagerDB.cpp
+    src/Systems/StateManager.cpp
+    src/Systems/PlayerManager.cpp
+    src/Systems/MapManager.cpp
 
-# Add include directories
-target_include_directories(riskit_server
-    PRIVATE
-#        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/src/Endpoints
-        ${CMAKE_SOURCE_DIR}/src/Helpers
-         ${CMAKE_SOURCE_DIR}/src
-         ${CMAKE_SOURCE_DIR}/src/Systems
 )
 
-# ---------------------------
-# Add this block for nlohmann/json
-# ---------------------------
+# Shared include directories 
+set(COMMON_INCLUDES
+    ${CMAKE_SOURCE_DIR}/src/Endpoints
+    ${CMAKE_SOURCE_DIR}/src/Helpers
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/Systems
+    ${CMAKE_SOURCE_DIR}/src/Core
+)
+
+# Production executable 
+add_executable(riskit_server
+    src/main.cpp         
+    ${COMMON_SOURCES}    
+)
+target_include_directories(riskit_server PRIVATE 
+    ${COMMON_INCLUDES}
+
+)
+# Prod libs
 find_package(nlohmann_json REQUIRED)
 target_link_libraries(riskit_server PRIVATE nlohmann_json::nlohmann_json)
+#
+
+# Test executable
+add_executable(riskit_tests
+    src/TestFiles/test_main.cpp 
+    src/TestFiles/ServerTestFixture.hpp
+    src/TestFiles/PlayerEndpointTests.cpp
+    ${COMMON_SOURCES}   
+    
+ "src/TestFiles/PlayerEndpointTests.cpp")
+
+target_include_directories(riskit_tests PRIVATE
+    ${COMMON_INCLUDES}
+    ${CMAKE_SOURCE_DIR}/src/TestFiles
+)
+# Test libs
+find_package(GTest REQUIRED)
+target_link_libraries(riskit_tests PRIVATE GTest::gtest GTest::gtest_main)
+
+find_package(nlohmann_json REQUIRED)
+target_link_libraries(riskit_tests PRIVATE nlohmann_json::nlohmann_json)
+#
+
 
 # ---------------------------
 # Compiler warnings

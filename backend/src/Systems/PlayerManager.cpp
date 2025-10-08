@@ -32,7 +32,7 @@ Player PlayerManager::GetPlayerData(int id, bool lastPlayerAdded) const
         return m_Players.back();
     }
 
-    return m_Players[id];
+    return m_Players[id-1]; // (Since it's 0-indexed)(0 id is not passable)
 }
 const nlohmann::json  PlayerManager::GetPlayerJson(int id,bool lastPlayerAdded) const
 {
@@ -40,8 +40,7 @@ const nlohmann::json  PlayerManager::GetPlayerJson(int id,bool lastPlayerAdded) 
     {
         return m_Players.back().ToJson();
     }
-
-    return m_Players[id].ToJson();
+    return m_Players[id-1].ToJson();  // (Since it's 0-indexed)(0 id is not passable)
 }
 
 Player PlayerManager::FromJson(const nlohmann::json& jsonInput)
