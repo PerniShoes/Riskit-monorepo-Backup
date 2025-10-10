@@ -11,13 +11,7 @@ HealthEndpoint::HealthEndpoint()
 
 Response HealthEndpoint::HGET()
 {
-    using ordered_json = nlohmann::ordered_json;
-
-    ordered_json health;
-
-    health["health"] = {{"status", "ok"}, {"service", "cpp_backend"}};
-
-    return {health.dump(4), "200 OK"};
+    return Response{"Won't be used","42069"};
 }
 
 Response HealthEndpoint::HPOST()

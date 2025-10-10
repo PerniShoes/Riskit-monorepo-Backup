@@ -43,9 +43,8 @@ Response PlayerEndpoint::HGET()
         return Response{responseJson.dump(), "200 OK"};
     }
 
-    // FIX (hardcoded id)
     // Don't allow 0 id
-    if (id >= 1 && id <= systemsPtr->PlayerM->GetPlayerAmount())
+    if (systemsPtr->PlayerM->IsValidPlayerId(id))
     {
         ordered_json player;
         player = systemsPtr->PlayerM->GetPlayerJson(id,false);
@@ -54,9 +53,10 @@ Response PlayerEndpoint::HGET()
     }
     else
     {
+
         ordered_json err = {{"error", "player_not_found"}, {"id", id}};
         return {err.dump(4), "404 Not Found"};
-    } 
+    }
 }
 
 Response PlayerEndpoint::HPOST()

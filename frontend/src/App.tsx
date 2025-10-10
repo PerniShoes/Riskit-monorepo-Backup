@@ -16,7 +16,9 @@ const theme = createTheme()
 
 const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
 
-
+// FIX test code
+let nextPlayerId = 1;
+//    
 function App() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
@@ -29,7 +31,7 @@ function App() {
     executeAttack,
     endTurn,
     changePhase
-  } = useGameLogic(players);
+    } = useGameLogic(players);
 
   useEffect(() => {
       fetch('/api/state')
@@ -60,9 +62,9 @@ function App() {
 
 
       // Lookup cheatsheet of post and get
-
+ 
       const playerData = {
-          id: 10,
+          id: nextPlayerId++,
           name: "John Doe",
           color: "red",
           gold: 100,

@@ -16,7 +16,6 @@ protected:
 
     void SetUp() override
     {
-        
         // Register all endpoints
         server.RegisterEndpoint(std::make_unique<PlayerEndpoint>());
         server.RegisterEndpoint(std::make_unique<StateEndpoint>());

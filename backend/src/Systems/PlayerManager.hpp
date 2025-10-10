@@ -13,12 +13,13 @@ public:
     PlayerManager(SystemsManagerDB& systemsManager);
     ~PlayerManager();
     
-    void AddPlayer(const nlohmann::json& newPlayer);
+    void AddPlayer(const nlohmann::ordered_json& newPlayer);
     Player GetPlayerData(int id, bool lastPlayerAdded = false) const;
-    const nlohmann::json GetPlayerJson(int id,bool lastPlayerAdded = false) const;
+    const nlohmann::ordered_json GetPlayerJson(int id,bool lastPlayerAdded = false) const;
     int GetPlayerAmount()const;
+    bool IsValidPlayerId(int id) const;
 
-    Player FromJson(const nlohmann::json& jsonInput);
+    Player FromJson(const nlohmann::ordered_json& jsonInput);
 
 
 private:

@@ -11,6 +11,7 @@ class SystemsManagerDB final
 
 public:
 
+    // FIX, rule of 5/6 here and in all managers
     SystemsManagerDB();
     ~SystemsManagerDB();
 

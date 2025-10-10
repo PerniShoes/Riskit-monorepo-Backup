@@ -24,7 +24,7 @@ void SystemsManagerDB::InitSystems()
     PlayerM = std::make_unique<PlayerManager>(*this);
     StateM = std::make_unique<StateManager>(*this);
     
-
+    
 
 }
 void SystemsManagerDB::Close()

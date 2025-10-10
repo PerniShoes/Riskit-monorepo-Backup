@@ -16,9 +16,9 @@ struct Player
     int territoriesCount{-1};
     std::vector<std::string> continentsControlled;
 
-    const nlohmann::json ToJson() const
+    const nlohmann::ordered_json ToJson() const
     {
-        nlohmann::json jsonPlayer = nlohmann::json{
+        nlohmann::ordered_json jsonPlayer = nlohmann::ordered_json{
         {"id", id},
         {"name", name},
         {"color", color},

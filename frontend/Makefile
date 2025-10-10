@@ -9,7 +9,7 @@ PID=../backend/backend.pid
 
 build-backend:
 	@echo "Configuring and building backend (Ninja)..."
-	cd .. && rm -rf backend/build && cmake -S backend -B backend/build -G Ninja && cmake --build backend/build
+	cd .. && rm -rf backend/build && cmake -S backend -B backend/build -G Ninja -DBUILD_TESTS=OFF && cmake --build backend/build
 
 run-backend: build-backend
 	@echo "Starting backend in background..."
