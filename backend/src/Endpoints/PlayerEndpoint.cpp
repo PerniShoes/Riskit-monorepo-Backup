@@ -29,6 +29,14 @@ Response PlayerEndpoint::HGET()
         {
         case -1:
             responseJson["Error"] = "Did you call /api/player GET??? (no id)";
+
+
+
+
+
+
+
+
             break;
         case -2:
             responseJson["Error"] = "Didn't find the required param (id)";

@@ -12,7 +12,7 @@ TEST_F(ServerTestFixture,GET_LastPlayer_NoID)
     Request req{"GET", "/api/player", ""}; // No id
     Response resp = ep->HandleMethod(req);
 
-    auto jsonResp = nlohmann::json::parse(resp.body);
+    auto jsonResp = nlohmann::ordered_json::parse(resp.body);
     EXPECT_TRUE(jsonResp.contains("Error"));
     EXPECT_EQ(jsonResp["Error"],"Did you call /api/player GET??? (no id)");
     EXPECT_EQ(resp.status,"200 OK");
@@ -29,7 +29,7 @@ TEST_F(ServerTestFixture,GET_PlayerByID_Exists)
     Request req{"GET", "/api/player/1", ""};
     Response resp = ep->HandleMethod(req);
 
-    auto jsonResp = nlohmann::json::parse(resp.body);
+    auto jsonResp = nlohmann::ordered_json::parse(resp.body);
     // PrintResp(jsonResp);
     EXPECT_EQ(jsonResp["id"],1);
     EXPECT_EQ(jsonResp["name"],"Alice");

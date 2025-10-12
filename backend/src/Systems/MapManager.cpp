@@ -23,15 +23,16 @@ void MapManager::AddTerritory(const Territory& territory)
 
 Territory* MapManager::GetTerritory(int id)
 {
-    auto it = m_Territories.find(id);
-    if (it != m_Territories.end())
-        return &it->second;
-    return nullptr;
+    if (id > int(m_Territories.size()))
+    {
+        return nullptr;
+    }
+    return &m_Territories[id-1];
 }
 
-std::unordered_map<int,Territory>& MapManager::GetAllTerritories() const
+std::vector<Territory> MapManager::GetAllTerritories() const
 {
-    return const_cast<std::unordered_map<int,Territory>&>(m_Territories);
+    return m_Territories;
 }
 
 void MapManager::AddContinent(const Continent& continent)
@@ -52,9 +53,10 @@ bool MapManager::IsContinentControlled(int playerId,const std::string& continent
     const Continent& c = it->second;
     for (int tid : c.territoryIds)
     {
-        auto tIt = m_Territories.find(tid);
-        if (tIt == m_Territories.end() || tIt->second.ownerId != playerId)
+        if (m_Territories[tid].ownerId != playerId)
+        {
             return false;
+        }
     }
     return true;
 }
@@ -74,17 +76,19 @@ bool MapManager::IsRegionControlled(int playerId,const std::string& region) cons
     const Region& r = it->second;
     for (int tid : r.territoryIds)
     {
-        auto tIt = m_Territories.find(tid);
-        if (tIt == m_Territories.end() || tIt->second.ownerId != playerId)
+        if (m_Territories[tid].ownerId != playerId)
+        {
             return false;
+        }
     }
     return true;
 }
 bool MapManager::AreNeighbors(int territoryA,int territoryB) const
 {
-    auto it = m_Territories.find(territoryA);
-    if (it == m_Territories.end()) return false;
-    return it->second.neighbors.count(territoryB) > 0;
+    
+    // Not done yet
+    // return it->second.neighbors.count(territoryB) > 0;
+    return false;
 }
 
 int MapManager::CalculateBonusForPlayer(int playerId) const
@@ -114,13 +118,91 @@ void MapManager::UpgradeBuilding(int territoryId,std::string buildingType)
 
     t->buildings[buildingType] += 1;
 }
-int MapManager::GetBuildingLevel(int territoryId) const
+int MapManager::GetBuildingLevel(int territoryId) 
 {
-    auto it = m_Territories.find(territoryId);
-    if (it == m_Territories.end()) return 0;
+  
 
-    auto bIt = it->second.buildings.find("Fort");
-    if (bIt == it->second.buildings.end()) return 0;
+    // Buildings not supported yet
+   // return m_Territories[territoryId].buildings["name"];
+    return -1;
+}
 
-    return bIt->second;
+void MapManager::LoadFromJson(const nlohmann::ordered_json& jsonInput)
+{
+
+    m_Territories;
+    if (jsonInput.contains("territories") && jsonInput["territories"].is_array())
+    {
+        for (auto& territority : jsonInput["territories"])
+        {
+            m_Territories.push_back(TerritoryFromJson(territority));
+        }
+    }
+
+ 
+    
+   // m_Continents;
+
+
+ /*   m_Regions;
+    if (jsonInput.contains("continentsControlled") && jsonInput["continentsControlled"].is_array())
+    {
+        p.continentsControlled = jsonInput["continentsControlled"].get<std::vector<std::string>>();
+    }*/
+
+
+}
+
+Territory MapManager::TerritoryFromJson(const nlohmann::ordered_json& jsonInput)
+{
+
+    Territory temp;
+    temp.id = jsonInput.value("id",-1);                 // -1 missing ID
+    temp.name = jsonInput.value("name","Unknown");
+    temp.ownerId = jsonInput.value("ownerId",-1);
+    temp.armies = jsonInput.value("armies",-1);
+    temp.continent = jsonInput.value("continent","Unknown");
+    temp.region = jsonInput.value("region","Unknown");
+
+    if (jsonInput.contains("neighbors") && jsonInput["neighbors"].is_array())
+    {
+        for (auto& neighborsId : jsonInput["neighbors"])
+        {
+            temp.neighbors.push_back(neighborsId.get<int>());
+        }
+    }
+
+    return temp;
+}
+
+nlohmann::ordered_json MapManager::TerritoryToJson(Territory target)
+{
+    nlohmann::ordered_json temp;
+
+    temp["id"] = target.id;
+    temp["name"] = target.name;
+    temp["ownerId"] = target.ownerId;
+    temp["armies"] = target.armies;
+    temp["continent"] = target.continent;
+    temp["region"] = target.region;
+    temp["neighbors"] = target.neighbors;
+
+    return temp;
+
+}
+nlohmann::ordered_json MapManager::MapToJson()
+{
+
+    nlohmann::ordered_json temp;
+
+    for (auto& territory : m_Territories)
+    {
+        temp["territories"].push_back(TerritoryToJson(territory));
+    }
+
+    //temp["name"] = m_Continents;
+    //temp["ownerId"] = m_Regions;
+ 
+    return temp;
+
 }

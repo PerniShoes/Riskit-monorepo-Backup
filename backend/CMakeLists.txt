@@ -1,4 +1,10 @@
 ﻿cmake_minimum_required(VERSION 3.15)
+
+# Tell CMake we acknowledge the removal of FindBoost
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
 project(riskit_backend VERSION 0.1.0 LANGUAGES CXX)
 
 # Option toggle so tests run fine localy, but in wsl make commands turn it off 
@@ -42,7 +48,10 @@ target_include_directories(riskit_server PRIVATE
     ${COMMON_INCLUDES}
 
 )
-# Prod libs
+# Prod AND test libs
+find_package(Boost 1.83.0 REQUIRED)
+target_include_directories(riskit_server PRIVATE ${Boost_INCLUDE_DIRS})
+
 find_package(nlohmann_json REQUIRED)
 target_link_libraries(riskit_server PRIVATE nlohmann_json::nlohmann_json)
 #
@@ -55,18 +64,16 @@ add_executable(riskit_tests
     src/TestFiles/PlayerEndpointTests.cpp
     ${COMMON_SOURCES}   
     
- "src/TestFiles/PlayerEndpointTests.cpp"  "src/Endpoints/MapEndpoint.cpp")
+ "src/TestFiles/PlayerEndpointTests.cpp"  "src/Endpoints/MapEndpoint.cpp" "src/TestFiles/StateEndpointTests.cpp")
 
 target_include_directories(riskit_tests PRIVATE
     ${COMMON_INCLUDES}
     ${CMAKE_SOURCE_DIR}/src/TestFiles
 )
-# Test libs
+# Test ONLY libs
 find_package(GTest REQUIRED)
 target_link_libraries(riskit_tests PRIVATE GTest::gtest GTest::gtest_main)
 
-find_package(nlohmann_json REQUIRED)
-target_link_libraries(riskit_tests PRIVATE nlohmann_json::nlohmann_json)
 #
 endif()
 

@@ -18,6 +18,7 @@ int main()
     server.RegisterEndpoint(std::make_unique<StateEndpoint>());
     server.RegisterEndpoint(std::make_unique<HealthEndpoint>());
     server.RegisterEndpoint(std::make_unique<RiskEndpoint>());
+    server.RegisterEndpoint(std::make_unique<MapEndpoint>());
 
     server.Run();
     return 0;

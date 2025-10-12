@@ -99,7 +99,52 @@ function App() {
               console.error("Fetch error:", err);
           });
 
-      //fetch(`/api/player/10`)
+
+      const stateData = {
+          turn: 0,
+          phase: "Setup",
+          currentPlayerId: 1,
+      };
+      fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(stateData),
+      })
+      const mapData = {
+          territories: {
+              1: {
+                  id: 1,
+                  name: "Alaska",
+                  ownerId: 3,
+                  armies: 5,
+                  neighbors: [2, 5, 6],
+                  continent: "North America",
+                  region: "West",
+                  buildings: {
+                      fort: 1,
+                      barracks: 2
+                  }
+              },
+              2: {
+                  id: 2,
+                  name: "Northwest Territory",
+                  ownerId: 3,
+                  armies: 3,
+                  neighbors: [1, 3, 5],
+                  continent: "North America",
+                  region: "North",
+                  buildings: {
+                      farm: 1
+                  }
+              }
+          }
+      };
+      fetch("/api/map", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mapData),
+      })
+
   }, []);
 
 

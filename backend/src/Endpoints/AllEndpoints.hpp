@@ -3,3 +3,4 @@
 #include "PlayerEndpoint.hpp"
 #include "HealthEndpoint.hpp"
 #include "RiskEndpoint.hpp"
+#include "MapEndpoint.hpp"

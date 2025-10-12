@@ -1,10 +1,14 @@
 #pragma once
 #include <chrono>
 #include <vector>
-
+#include <nlohmann/json.hpp>
+#include <map>
+#include <string>
+#include <boost/bimap.hpp>
 
 enum class GamePhase
 {
+    Undefined = 0,
     Setup,
     Reinforcement,
     Attack,
@@ -31,6 +35,9 @@ public:
     int GetWinnerId() const;
     bool GetGameStarted() const; 
 
+    void LoadFromJson(const nlohmann::ordered_json& jsonInput);
+    nlohmann::ordered_json StateToJson();
+
 private:
 
     SystemsManagerDB& m_SystemsManager;
@@ -43,10 +50,10 @@ private:
     bool m_GameStarted;
     bool m_GameOver;
     int m_WinnerId;
+    boost::bimap<GamePhase,std::string> m_PhaseString;
 
     // More advanced
     // std::chrono::system_clock::time_point lastActionTime;
     // std::vector<ActionLog> history;
-
 
 };

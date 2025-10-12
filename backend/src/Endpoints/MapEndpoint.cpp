@@ -17,16 +17,52 @@ Response MapEndpoint::HGET()
 {
     using ordered_json = nlohmann::ordered_json;
 
-    ordered_json state;
-    state["time"] = std::time(nullptr);
+    std::string idStr = ExtractParam("id");
+    int id = 0;
+    try { id = std::stoi(idStr); }
+    catch (...) { id = 0; }
 
 
-    return {state.dump(4), "200 OK"};
+    if (id < -1)
+    {
+        ordered_json responseJson;
+        responseJson["id"] = id;
+        switch (id)
+        {
+        case -2:
+            responseJson["Error"] = "Didn't find the required param (id)";
+            break;
+        case -3:
+            responseJson["Error"] = "Didn't find any param";
+            break;
+        default:
+            responseJson["Error"] = "ID issue. Is it bellow 0?";
+            break;
+        }
+        return Response{responseJson.dump(), "200 OK"};
+    }
+
+    // GET without id
+    if (id == -1)
+    {
+        ordered_json map;
+        map = systemsPtr->MapM->MapToJson();
+
+        return Response{map.dump(4),"200 OK"};
+    }
+
+    // ???multiple optionals to be able to access by territory or continent or region???
+
+    ordered_json err = {{"error", "map functionality missing, or error"}, {"id", id}};
+    return {err.dump(4), "404 Not Found"};
+
 }
 
 Response MapEndpoint::HPOST()
 {
-    return {"Not implemented yet","StateEP"};
+    systemsPtr->MapM->LoadFromJson(m_Request.json());
+
+    return Response{"Map load worked","200 OK"};
 }
 Response MapEndpoint::HPUT()
 {

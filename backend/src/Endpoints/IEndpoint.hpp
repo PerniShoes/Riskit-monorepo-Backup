@@ -9,20 +9,20 @@ struct Request
     std::string path;
     std::string body;
 
-    nlohmann::json json() const
+    nlohmann::ordered_json json() const
     {
         if (body.empty())
         {
-            return nlohmann::json::object();
+            return nlohmann::ordered_json::object();
         }
 
         try
         {
-            return nlohmann::json::parse(body);
+            return nlohmann::ordered_json::parse(body);
         }
-        catch (const nlohmann::json::parse_error&)
+        catch (const nlohmann::ordered_json::parse_error&)
         {
-            return nlohmann::json::object(); // Fallback
+            return nlohmann::ordered_json::object(); // Fallback
         }
     }
 };
