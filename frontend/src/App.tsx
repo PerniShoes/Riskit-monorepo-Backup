@@ -1,215 +1,231 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import Container from '@mui/material/Container'
-import Typography from '@mui/material/Typography'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Paper from '@mui/material/Paper'
-import Chip from '@mui/material/Chip'
-import RiskMap from './components/RiskMap'
-import GameController from './components/GameController'
-import { useGameLogic } from './hooks/useGameLogic'
-import type { Territory, Player } from './types/game'
+import { useEffect, useState, useMemo } from 'react';
+import './App.css';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
+import RiskMap from './components/RiskMap';
+import GameController from './components/GameController';
+import { useGameLogic } from './hooks/useGameLogic';
+import { useGameApi } from './hooks/useGameApi';
+import { mockApi } from './services/mockApi';
+import type { Player, TurnSubmitResponse, ActionResult, GameState } from './types/game';
 
-const theme = createTheme()
+const theme = createTheme();
 
 const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
 
-// FIX test code
-let nextPlayerId = 1;
-//    
+// Mock game setup
+const MOCK_GAME_ID = 'game-123';
+const MOCK_PLAYER_ID = 1;
+
 function App() {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [loading, setLoading] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [turnResults, setTurnResults] = useState<ActionResult[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [draftAmount, setDraftAmount] = useState(1); // Slider value for draft phase
 
+  // UI state management (selections, etc.)
   const {
     gameState,
+    selectedTerritory,
+    attackFromTerritory,
+    updateGameState,
     selectTerritory,
-    placeArmy,
-    executeAttack,
-    endTurn,
-    changePhase
-    } = useGameLogic(players);
+    clearSelections,
+  } = useGameLogic();
 
+  // API & Action queue management
+  const {
+    actionQueue,
+    isSubmitting,
+    submitError,
+    addDraftAction,
+    addAttackAction,
+    // addFortifyAction, // TODO: will be used when fortify UI is implemented
+    clearActions,
+    submitTurn,
+  } = useGameApi(MOCK_GAME_ID, MOCK_PLAYER_ID);
+
+  // Calculate optimistic game state preview based on action queue
+  const gameStateWithPreview = useMemo(() => {
+    if (!gameState) return null;
+
+    // Clone territories for preview
+    const previewTerritories = gameState.territories.map((t) => ({ ...t }));
+    let remainingArmies = gameState.armiesToPlace;
+
+    // Apply draft actions to preview
+    actionQueue.forEach((action) => {
+      if (action.type === 'draft') {
+        const territory = previewTerritories.find((t) => t.id === action.territoryId);
+        if (territory) {
+          territory.armies += action.armies;
+          remainingArmies -= action.armies;
+        }
+      }
+      // TODO: Add preview for attack results (more complex - needs simulation)
+      // TODO: Add preview for fortify actions
+    });
+
+    return {
+      ...gameState,
+      territories: previewTerritories,
+      armiesToPlace: Math.max(0, remainingArmies),
+    };
+  }, [gameState, actionQueue]);
+
+  // Initialize game on mount
   useEffect(() => {
-      fetch('/api/state')
-          .then((r) => r.json())
-          .then((data) => {
-              console.log("Fetched state:", data);
+    const initGame = async () => {
+      try {
+        // Use mock API for now
+        const newGameResponse = await mockApi.createGame([
+          { name: 'Gracz 1', color: playerColors[0] },
+          { name: 'Gracz 2', color: playerColors[1] },
+          { name: 'Gracz 3', color: playerColors[2] },
+        ]);
 
-              if (!data || !Array.isArray(data.players)) {
-                  console.error("Invalid /api/state response: expected { players: Player[] }, got:", data);
-                  setPlayers([]);
-                  return;
-              }
+        console.log('Game created:', newGameResponse);
 
-              // Add colors and missing properties to players
-              const playersWithColors: Player[] = data.players.map((player: Player, index: number) => ({
-                  ...player,
-                  color: playerColors[index % playerColors.length],
-                  territoriesCount: 0,
-                  continentsControlled: []
-              }));
+        // Fetch initial game state
+        const initialState = await mockApi.getGameState(MOCK_GAME_ID);
+        console.log('Initial state:', initialState);
 
-              setPlayers(playersWithColors);
-          })
-          .catch((err) => {
-              console.error("Failed to fetch /api/state:", err);
-              setPlayers([]);
-          });
-
-
-      // Lookup cheatsheet of post and get
- 
-      const playerData = {
-          id: nextPlayerId++,
-          name: "John Doe",
-          color: "red",
-          gold: 100,
-          army: { infantry: 50, tanks: 5 },
-          territoriesCount: 0,
-          continentsControlled: ["Europe"]
-      };
-
-      fetch("/api/player", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(playerData),
-      })
-          .then(async (res) => {
-              const text = await res.text(); // read raw response text
-              let data;
-              try {
-                  data = JSON.parse(text); // try parsing as JSON
-              } catch {
-                  data = text; // fallback to raw text if not JSON
-              }
-
-              if (!res.ok) {
-                  // Log failure details
-                  console.error("Request failed:", res.status, res.statusText);
-                  console.error("Response body:", data);
-              } else {
-                  console.log("Success:", data);
-              }
-          })
-          .catch((err) => {
-              console.error("Fetch error:", err);
-          });
-
-
-      const stateData = {
-          turn: 0,
-          phase: "Setup",
-          currentPlayerId: 1,
-      };
-      fetch("/api/state", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(stateData),
-      })
-      const mapData = {
-          territories: {
-              1: {
-                  id: 1,
-                  name: "Alaska",
-                  ownerId: 3,
-                  armies: 5,
-                  neighbors: [2, 5, 6],
-                  continent: "North America",
-                  region: "West",
-                  buildings: {
-                      fort: 1,
-                      barracks: 2
-                  }
-              },
-              2: {
-                  id: 2,
-                  name: "Northwest Territory",
-                  ownerId: 3,
-                  armies: 3,
-                  neighbors: [1, 3, 5],
-                  continent: "North America",
-                  region: "North",
-                  buildings: {
-                      farm: 1
-                  }
-              }
-          }
-      };
-      fetch("/api/map", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mapData),
-      })
-
-  }, []);
-
-
-    const showPlayer = (id: number) => {
-        setLoading(true);
-
-        fetch(`/api/player/${id}`)
-            .then(async (res) => {
-                const text = await res.text(); // read raw response text
-                let data: object | string;
-                try {
-                    data = JSON.parse(text); // try parsing as JSON
-                } catch (err) {
-                    console.error("Failed to parse JSON:", err, "Raw response:", text);
-                    data = text; // fallback to raw text
-                }
-
-                if (!res.ok) {
-                    console.error("Request failed:", res.status, res.statusText);
-                    console.error("Response body:", data);
-                } else {
-                    if (typeof data === "object") {
-                        const playerWithColor = {
-                            ...data,
-                            color: playerColors[(id - 1) % playerColors.length],
-                            territoriesCount: 0,
-                            continentsControlled: []
-                        };
-                        console.log(`Selected player (id: ${id}):`, playerWithColor);
-                    } else {
-                        console.error("Expected JSON object but got:", data);
-                    }
-                }
-            })
-            .catch((err) => console.error("Fetch error:", err))
-            .finally(() => setLoading(false));
+        if (initialState) {
+          // GameStateResponse doesn't have nested gameState property
+          const gameStateData: GameState = {
+            turn: initialState.turn,
+            currentPlayer: initialState.currentPlayer,
+            phase: initialState.phase,
+            armiesToPlace: initialState.armiesToPlace,
+            territories: initialState.territories,
+            players: initialState.players,
+            gameLog: [],
+            selectedTerritory: null,
+            attackFromTerritory: null,
+          };
+          updateGameState(gameStateData);
+          setPlayers(initialState.players);
+        }
+      } catch (error) {
+        console.error('Failed to initialize game:', error);
+      }
     };
 
+    initGame();
+  }, [updateGameState]);
 
+  // Auto-adjust draft amount when armiesToPlace changes (using preview state)
+  useEffect(() => {
+    if (gameStateWithPreview && gameStateWithPreview.phase === 'draft') {
+      // Reset slider to min of current value or remaining armies in preview
+      const maxArmies = Math.max(1, gameStateWithPreview.armiesToPlace);
+      setDraftAmount((prev) => Math.min(prev, maxArmies));
+    }
+  }, [gameStateWithPreview?.armiesToPlace, gameStateWithPreview?.phase]);
 
-  const handleTerritoryClick = (territory: Territory) => {
+  // Handle territory clicks based on current phase
+  const handleTerritoryClick = (territory: typeof selectedTerritory) => {
+    if (!territory || !gameState || !gameStateWithPreview) return;
+
     selectTerritory(territory);
-  };
 
-  const handleAttack = () => {
-    const result = executeAttack();
-    if (result) {
-      console.log("Attack result:", result);
+    // Auto-queue actions based on phase and selections
+    if (gameState.phase === 'draft') {
+      // Draft: clicking own territory queues armies based on slider value
+      if (territory.owner === gameState.currentPlayer) {
+        const amountToAdd = Math.min(draftAmount, gameStateWithPreview.armiesToPlace);
+        if (amountToAdd > 0) {
+          addDraftAction(territory.id, amountToAdd);
+        }
+      }
+    } else if (gameState.phase === 'attack') {
+      // Attack: if we have both attacker and defender selected, queue attack
+      if (attackFromTerritory && territory.owner !== gameState.currentPlayer) {
+        const attackingArmies = Math.min(3, attackFromTerritory.armies - 1);
+        addAttackAction(attackFromTerritory.id, territory.id, attackingArmies);
+      }
     }
   };
 
-  if (!gameStarted) {
+  // Handle fortify action (currently unused - will be needed for fortify UI)
+  // const handleFortify = (fromId: string, toId: string, count: number) => {
+  //   addFortifyAction(fromId, toId, count);
+  // };
+
+  // Handle end turn - submit all queued actions
+  const handleEndTurn = async () => {
+    if (actionQueue.length === 0) {
+      console.warn('No actions to submit');
+      return;
+    }
+
+    setShowResults(false);
+    setTurnResults([]);
+
+    const response: TurnSubmitResponse | null = await submitTurn();
+
+    if (response && response.success) {
+      console.log('Turn submitted successfully:', response);
+      setTurnResults(response.results);
+      setShowResults(true);
+
+      // Update game state with new state from backend
+      if (response.gameState) {
+        updateGameState(response.gameState);
+      }
+
+      // Clear selections
+      clearSelections();
+    } else {
+      console.error('Turn submission failed:', submitError);
+    }
+  };
+
+  // Handle phase change
+  const handleChangePhase = (newPhase: 'draft' | 'attack' | 'fortify') => {
+    if (!gameState) return;
+
+    if (gameState.phase === 'draft' && gameState.armiesToPlace > 0) {
+      console.warn('Cannot leave draft phase with armies remaining');
+      return;
+    }
+
+    // Just update UI phase - actual phase transition happens on backend after turn submit
+    clearSelections();
+    console.log(`Changing to phase: ${newPhase}`);
+  };
+
+  // Clear turn results
+  const closeTurnResults = () => {
+    setShowResults(false);
+    setTurnResults([]);
+  };
+
+  if (!gameStarted || !gameState) {
     return (
       <ThemeProvider theme={theme}>
         <Container maxWidth="md">
           <Box sx={{ my: 4 }}>
-            <Typography variant="h3" component="h1" gutterBottom sx={{ color: 'white', textAlign: 'center', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
+            <Typography
+              variant="h3"
+              component="h1"
+              gutterBottom
+              sx={{ color: 'white', textAlign: 'center', textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}
+            >
               RiskIT — Podbój Świata
             </Typography>
-            
+
             <Typography variant="h6" gutterBottom sx={{ color: 'white', textAlign: 'center', mb: 3 }}>
-              Strategiczna gra o podboju świata
+              Strategiczna gra o podboju świata (REFACTORED VERSION)
             </Typography>
 
-            {/* Game Rules */}
             <Paper elevation={4} sx={{ p: 3, mb: 3, bgcolor: 'rgba(255,255,255,0.95)' }}>
               <Typography variant="h5" gutterBottom color="primary">
                 📋 Jak grać w RiskIT?
@@ -220,76 +236,28 @@ function App() {
               <Typography variant="body2" component="div" sx={{ mb: 2 }}>
                 <strong>Fazy tury:</strong>
                 <ul style={{ marginLeft: 20 }}>
-                  <li><strong>🪖 DRAFT</strong> - Otrzymujesz armie i rozmieszczasz je na swoich terytoriach</li>
-                  <li><strong>⚔️ ATTACK</strong> - Atakujesz sąsiednie terytoria przeciwników</li>
-                  <li><strong>🛡️ FORTIFY</strong> - Przesuwasz armie między swoimi terytoriami</li>
+                  <li>
+                    <strong>🪖 DRAFT</strong> - Otrzymujesz armie i rozmieszczasz je na swoich terytoriach
+                  </li>
+                  <li>
+                    <strong>⚔️ ATTACK</strong> - Atakujesz sąsiednie terytoria przeciwników
+                  </li>
+                  <li>
+                    <strong>🛡️ FORTIFY</strong> - Przesuwasz armie między swoimi terytoriami
+                  </li>
                 </ul>
               </Typography>
-              <Typography variant="body2">
-                <strong>💡 Wskazówki:</strong> Kontroluj całe kontynenty aby otrzymać bonus armii! Im więcej terytoriów posiadasz, tym więcej armii otrzymujesz każdą turę.
-              </Typography>
             </Paper>
 
-            {/* Players Selection */}
-            <Paper elevation={4} sx={{ p: 3, mb: 3, bgcolor: 'rgba(255,255,255,0.95)' }}>
-              <Typography variant="h6" gutterBottom>
-                👥 Wybierz swojego gracza:
-              </Typography>
-              {players.length === 0 ? (
-                <Typography color="text.secondary">Ładowanie graczy...</Typography>
-              ) : (
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 2 }}>
-                  {players.map((p) => (
-                    <Button 
-                      key={p.id} 
-                      variant="contained" 
-                      onClick={() => showPlayer(p.id)}
-                      sx={{ 
-                        backgroundColor: p.color,
-                        p: 2,
-                        '&:hover': {
-                          backgroundColor: p.color,
-                          opacity: 0.8,
-                          transform: 'scale(1.02)'
-                        },
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
-                          {p.name}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                          💰 {p.gold} złota
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                          🪖 {p.army.infantry} piechoty | 🚗 {p.army.tanks} czołgów
-                        </Typography>
-                      </Box>
-                    </Button>
-                  ))}
-                </Box>
-              )}
-            </Paper>
-
-            {loading && (
-              <Paper elevation={2} sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.95)' }}>
-                <Typography>Ładowanie danych gracza...</Typography>
-              </Paper>
-            )}
-            
             <Box sx={{ textAlign: 'center' }}>
-              <Button 
-                sx={{ mt: 2 }} 
-                variant="contained" 
-                color="success" 
-                size="large" 
+              <Button
+                sx={{ mt: 2 }}
+                variant="contained"
+                color="success"
+                size="large"
                 onClick={() => setGameStarted(true)}
-                disabled={players.length === 0}
-                startIcon="🚀"
               >
-                Rozpocznij Grę!
+                🚀 Rozpocznij Grę!
               </Button>
             </Box>
           </Box>
@@ -298,22 +266,22 @@ function App() {
     );
   }
 
-  // Widok gry
+  // Game view
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth="xl" className="fade-in-up">
         {/* Top Navigation Bar */}
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 2, 
-            mb: 2, 
+        <Paper
+          elevation={3}
+          sx={{
+            p: 2,
+            mb: 2,
             bgcolor: 'rgba(255,255,255,0.95)',
-            display: 'flex', 
-            justifyContent: 'space-between', 
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 2
+            gap: 2,
           }}
         >
           <Box>
@@ -321,36 +289,53 @@ function App() {
               🌍 RiskIT — Podbój Świata
             </Typography>
           </Box>
-          
+
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Chip 
-              icon={<span>🎯</span>} 
-              label={`Tura: ${gameState.turn || 1}`} 
-              color="primary" 
+            <Chip icon={<span>🎯</span>} label={`Tura: ${gameState.turn}`} color="primary" variant="filled" />
+            <Chip
+              icon={<span>⏱️</span>}
+              label={`Faza: ${gameState.phase.toUpperCase()}`}
+              color="secondary"
               variant="filled"
             />
-            <Chip 
-              icon={<span>⏱️</span>} 
-              label={`Faza: ${gameState.phase.toUpperCase()}`} 
-              color="secondary" 
+            <Chip
+              icon={<span>👤</span>}
+              label={`Gracz: ${gameState.currentPlayer}`}
+              color="warning"
               variant="filled"
             />
+            <Chip label={`Akcje w kolejce: ${actionQueue.length}`} color="info" variant="outlined" />
             <Chip 
-              icon={<span>👤</span>} 
-              label={`Gracz: ${gameState.currentPlayer + 1}`} 
-              color="warning" 
-              variant="filled"
-            />
-            <Button 
+              label={`Pozostało armii: ${gameStateWithPreview?.armiesToPlace || 0}`} 
+              color="success" 
               variant="outlined" 
-              color="error" 
-              onClick={() => setGameStarted(false)}
-              size="small"
-            >
+            />
+            <Button variant="outlined" color="error" onClick={() => setGameStarted(false)} size="small">
               Menu Główne
             </Button>
           </Box>
         </Paper>
+
+        {/* Turn Results Display */}
+        {showResults && turnResults.length > 0 && (
+          <Alert severity="info" onClose={closeTurnResults} sx={{ mb: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              📊 Wyniki tury:
+            </Typography>
+            {turnResults.map((result, idx) => (
+              <Typography key={idx} variant="body2">
+                • {result.message}
+              </Typography>
+            ))}
+          </Alert>
+        )}
+
+        {/* Submit Error Display */}
+        {submitError && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => clearActions()}>
+            Błąd: {submitError}
+          </Alert>
+        )}
 
         {/* Game Phase Instructions */}
         <Paper elevation={2} sx={{ p: 2, mb: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
@@ -360,38 +345,43 @@ function App() {
             {gameState.phase === 'fortify' && '🛡️ Faza FORTIFY - Przenoś armie między terytoriami'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {gameState.phase === 'draft' && `Masz ${gameState.armiesToPlace} armii do rozmieszczenia. Kliknij na swoje terytoria aby je rozmieścić.`}
-            {gameState.phase === 'attack' && 'Wybierz swoje terytorium z co najmniej 2 armiami, następnie wybierz sąsiednie terytorium przeciwnika do ataku.'}
-            {gameState.phase === 'fortify' && 'Możesz przesunąć armie między swoimi sąsiadującymi terytoriami. Musi zostać co najmniej 1 armia na każdym terytorium.'}
+            {gameState.phase === 'draft' &&
+              `Masz ${gameStateWithPreview?.armiesToPlace || 0} armii do rozmieszczenia. Kliknij na swoje terytoria aby dodać akcje do kolejki.`}
+            {gameState.phase === 'attack' &&
+              'Wybierz swoje terytorium z co najmniej 2 armiami, następnie kliknij na sąsiednie terytorium przeciwnika.'}
+            {gameState.phase === 'fortify' && 'Przesuń armie między swoimi sąsiadującymi terytoriami.'}
           </Typography>
-          {gameState.selectedTerritory && (
+          {selectedTerritory && (
             <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
-              🎯 Wybrane terytorium: {gameState.selectedTerritory.name} ({gameState.selectedTerritory.armies} armii)
+              🎯 Wybrane: {selectedTerritory.name} ({selectedTerritory.armies} armii)
             </Typography>
           )}
         </Paper>
-        
+
         <Box sx={{ display: 'flex', gap: 3, my: 2 }}>
-          {/* Główna mapa */}
+          {/* Main map */}
           <Box sx={{ flex: 2 }}>
             <Paper elevation={4} sx={{ p: 2, borderRadius: 2 }} className="risk-map-container">
               <RiskMap 
-                gameState={gameState}
-                players={gameState.players}
-                onTerritoryClick={handleTerritoryClick}
+                gameState={gameStateWithPreview || gameState} 
+                players={players} 
+                onTerritoryClick={handleTerritoryClick} 
               />
             </Paper>
           </Box>
 
-          {/* Panel kontrolny */}
+          {/* Control panel */}
           <Box sx={{ flex: 1, minWidth: 300 }}>
             <GameController
-              gameState={gameState}
-              players={gameState.players}
-              onPlaceArmy={placeArmy}
-              onAttack={handleAttack}
-              onEndTurn={endTurn}
-              onChangePhase={changePhase}
+              gameState={gameStateWithPreview || gameState}
+              players={players}
+              actionQueue={actionQueue}
+              isSubmitting={isSubmitting}
+              draftAmount={draftAmount}
+              onDraftAmountChange={setDraftAmount}
+              onEndTurn={handleEndTurn}
+              onChangePhase={handleChangePhase}
+              onClearActions={clearActions}
             />
           </Box>
         </Box>
@@ -400,4 +390,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

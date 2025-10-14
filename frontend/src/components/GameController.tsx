@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { 
   Box, 
   Card, 
@@ -8,7 +7,11 @@ import {
   Chip, 
   Divider,
   Alert,
-  Stack
+  Stack,
+  List,
+  ListItem,
+  ListItemText,
+  Slider,
 } from '@mui/material';
 import { 
   PlayArrow, 
@@ -16,27 +19,34 @@ import {
   AttachMoney,
   Groups,
   Security,
-  LocalFireDepartment
+  LocalFireDepartment,
+  Clear,
 } from '@mui/icons-material';
-import type { Player, GameState } from '../types/game';
+import type { Player, GameState, Action } from '../types/game';
 import RiskAnalysis from './RiskAnalysis';
 
 interface GameControllerProps {
   gameState: GameState;
   players: Player[];
-  onPlaceArmy: () => void;
-  onAttack: () => void;
+  actionQueue: Action[];
+  isSubmitting: boolean;
+  draftAmount: number;
+  onDraftAmountChange: (value: number) => void;
   onEndTurn: () => void;
   onChangePhase: (phase: 'draft' | 'attack' | 'fortify') => void;
+  onClearActions: () => void;
 }
 
 export default function GameController({
   gameState,
   players,
-  onPlaceArmy,
-  onAttack,
+  actionQueue,
+  isSubmitting,
+  draftAmount,
+  onDraftAmountChange,
   onEndTurn,
-  onChangePhase
+  onChangePhase,
+  onClearActions
 }: GameControllerProps) {
   const currentPlayerData = players.find(p => p.id === gameState.currentPlayer);
   const selectedTerritory = gameState.selectedTerritory;
@@ -51,25 +61,6 @@ export default function GameController({
       continents: 0 // TODO: Calculate continent control
     };
   };
-
-  const canPlaceArmy = useMemo(() => {
-    return (
-      gameState.phase === 'draft' &&
-      gameState.armiesToPlace > 0 &&
-      selectedTerritory &&
-      selectedTerritory.owner === gameState.currentPlayer
-    );
-  }, [gameState.phase, gameState.armiesToPlace, selectedTerritory, gameState.currentPlayer]);
-
-  const canAttack = useMemo(() => {
-    return (
-      gameState.phase === 'attack' &&
-      gameState.attackFromTerritory &&
-      selectedTerritory &&
-      selectedTerritory.owner !== gameState.currentPlayer &&
-      gameState.attackFromTerritory.connections.includes(selectedTerritory.id)
-    );
-  }, [gameState.phase, gameState.attackFromTerritory, selectedTerritory, gameState.currentPlayer]);
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
@@ -160,94 +151,113 @@ export default function GameController({
         </CardContent>
       </Card>
 
-      {/* Game Phase Controls */}
+      {/* Action Queue & Controls */}
       <Card>
         <CardContent>
-          <Typography variant="h6" gutterBottom>Akcje</Typography>
+          <Typography variant="h6" gutterBottom>Kolejka Akcji</Typography>
           
-          {gameState.phase === 'draft' && (
-            <Box>
-              <Alert severity="info" sx={{ mb: 2 }}>
-                Rozmieść {gameState.armiesToPlace} armii na swoich terytoriach
-              </Alert>
+          {/* Draft Phase Slider */}
+          {gameState.phase === 'draft' && gameState.armiesToPlace > 0 && (
+            <Box sx={{ mb: 2, px: 1 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Liczba armii do rozmieszczenia:
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Slider
+                  value={draftAmount}
+                  onChange={(_, newValue) => onDraftAmountChange(newValue as number)}
+                  min={1}
+                  max={Math.max(1, gameState.armiesToPlace)}
+                  step={1}
+                  marks
+                  valueLabelDisplay="on"
+                  sx={{ flex: 1 }}
+                />
+                <Chip 
+                  label={`${draftAmount} / ${gameState.armiesToPlace}`} 
+                  color="primary" 
+                  size="small"
+                />
+              </Box>
+              <Typography variant="caption" color="text.secondary">
+                Kliknij na swoje terytorium aby dodać {draftAmount} {draftAmount === 1 ? 'armię' : 'armii'}
+              </Typography>
+            </Box>
+          )}
+          
+          {actionQueue.length === 0 ? (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {gameState.phase === 'draft' && 'Kliknij na swoje terytoria aby rozmieścić armie'}
+              {gameState.phase === 'attack' && 'Wybierz swoje terytorium, potem terytorium przeciwnika do ataku'}
+              {gameState.phase === 'fortify' && 'Przenieś armie między swoimi terytoriami'}
+            </Alert>
+          ) : (
+            <>
+              <List dense sx={{ mb: 2 }}>
+                {actionQueue.map((action, idx) => (
+                  <ListItem key={idx} sx={{ px: 0 }}>
+                    <ListItemText
+                      primary={
+                        action.type === 'draft'
+                          ? `🪖 Draft: +${action.armies} armii na ${action.territoryId}`
+                          : action.type === 'attack'
+                          ? `⚔️ Atak: ${action.from} → ${action.to} (${action.armies} armii)`
+                          : `🛡️ Fortify: ${action.from} → ${action.to} (${action.armies} armii)`
+                      }
+                      primaryTypographyProps={{ fontSize: '0.875rem' }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
               <Button
                 fullWidth
-                variant="contained"
-                color="success"
-                disabled={!canPlaceArmy}
-                onClick={onPlaceArmy}
+                variant="outlined"
+                color="error"
+                size="small"
+                startIcon={<Clear />}
+                onClick={onClearActions}
                 sx={{ mb: 1 }}
+                disabled={isSubmitting}
               >
-                Umieść armię ({selectedTerritory?.name || 'wybierz terytorium'})
+                Wyczyść kolejkę
               </Button>
-              {gameState.armiesToPlace === 0 && (
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => onChangePhase('attack')}
-                >
-                  Przejdź do ataku
-                </Button>
-              )}
-            </Box>
+            </>
           )}
 
-          {gameState.phase === 'attack' && (
-            <Box>
-              <Alert severity="warning" sx={{ mb: 2 }}>
-                {!gameState.attackFromTerritory 
-                  ? 'Wybierz swoje terytorium z armią > 1'
-                  : 'Teraz wybierz sąsiednie terytorium przeciwnika'
-                }
-              </Alert>
-              <Stack spacing={1}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="error"
-                  disabled={!canAttack}
-                  onClick={onAttack}
-                  startIcon={<LocalFireDepartment />}
-                >
-                  {canAttack ? `Atakuj ${selectedTerritory?.name}!` : 'Wybierz cel ataku'}
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => onChangePhase('fortify')}
-                >
-                  Przejdź do umocnienia
-                </Button>
-              </Stack>
-            </Box>
-          )}
+          {/* Phase Controls */}
+          <Stack spacing={1}>
+            {gameState.phase === 'draft' && gameState.armiesToPlace === 0 && (
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => onChangePhase('attack')}
+              >
+                Przejdź do ataku
+              </Button>
+            )}
+            
+            {gameState.phase === 'attack' && (
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => onChangePhase('fortify')}
+              >
+                Przejdź do umocnienia
+              </Button>
+            )}
 
-          {gameState.phase === 'fortify' && (
-            <Box>
-              <Alert severity="info" sx={{ mb: 2 }}>
-                Przenieś armie między swoimi terytoriami (opcjonalne)
-              </Alert>
-              <Stack spacing={1}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<Security />}
-                >
-                  Umocnij pozycje
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="secondary"
-                  onClick={onEndTurn}
-                  startIcon={<SkipNext />}
-                >
-                  Zakończ turę
-                </Button>
-              </Stack>
-            </Box>
-          )}
+            {/* End Turn Button */}
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              onClick={onEndTurn}
+              startIcon={<SkipNext />}
+              disabled={isSubmitting || actionQueue.length === 0}
+            >
+              {isSubmitting ? 'Wysyłanie...' : `Zakończ turę (${actionQueue.length} akcji)`}
+            </Button>
+          </Stack>
         </CardContent>
       </Card>
 
@@ -275,21 +285,13 @@ export default function GameController({
             </Box>
             
             {/* Attack info */}
-            {gameState.phase === 'attack' && gameState.attackFromTerritory && (
+            {gameState.phase === 'attack' && gameState.attackFromTerritory && selectedTerritory.id !== gameState.attackFromTerritory.id && (
               <Box sx={{ mt: 1 }}>
-                {gameState.attackFromTerritory.id === selectedTerritory.id ? (
-                  <Alert severity="info" sx={{ py: 0 }}>
-                    Źródło ataku - wybierz cel
-                  </Alert>
-                ) : canAttack ? (
-                  <Alert severity="warning" sx={{ py: 0 }}>
-                    Gotowy do ataku!
-                  </Alert>
-                ) : (
-                  <Alert severity="error" sx={{ py: 0 }}>
-                    Nie można zaatakować
-                  </Alert>
-                )}
+                <Alert severity="info" sx={{ py: 0 }}>
+                  {selectedTerritory.owner !== gameState.currentPlayer 
+                    ? 'Kliknij aby zaatakować'
+                    : 'Wybierz terytorium przeciwnika'}
+                </Alert>
               </Box>
             )}
           </CardContent>

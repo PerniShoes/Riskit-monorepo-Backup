@@ -14,11 +14,11 @@ int main()
     SystemsManagerDB systemsManger{};
     Server server(8081,&systemsManger);
 
-    server.RegisterEndpoint(std::make_unique<PlayerEndpoint>());
-    server.RegisterEndpoint(std::make_unique<StateEndpoint>());
     server.RegisterEndpoint(std::make_unique<HealthEndpoint>());
-    server.RegisterEndpoint(std::make_unique<RiskEndpoint>());
+    server.RegisterEndpoint(std::make_unique<StateEndpoint>());
+    server.RegisterEndpoint(std::make_unique<PlayerEndpoint>());
     server.RegisterEndpoint(std::make_unique<MapEndpoint>());
+    // server.RegisterEndpoint(std::make_unique<RiskEndpoint>()); // Removed - not needed in batch API architecture
 
     server.Run();
     return 0;

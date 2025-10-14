@@ -135,3 +135,124 @@ export const TERRITORIES: Territory[] = [
   { id: 'Australia_Wschodnia', name: 'Australia Wschodnia', continent: 'Australia', armies: 0, owner: null, position: { x: 440, y: 340 }, connections: ['Nowa_Gwinea', 'Australia_Zachodnia'] },
   { id: 'Australia_Zachodnia', name: 'Australia Zachodnia', continent: 'Australia', armies: 0, owner: null, position: { x: 400, y: 340 }, connections: ['Indonesia', 'Nowa_Gwinea', 'Australia_Wschodnia'] }
 ];
+
+// ==========================================
+// API Types - Batch Actions Architecture
+// ==========================================
+
+export type ActionType = 'draft' | 'attack' | 'fortify';
+
+export interface GameAction {
+  type: ActionType;
+  timestamp: number;
+}
+
+export interface DraftAction extends GameAction {
+  type: 'draft';
+  territoryId: string;
+  armies: number;
+}
+
+export interface AttackAction extends GameAction {
+  type: 'attack';
+  from: string;
+  to: string;
+  armies: number;
+}
+
+export interface FortifyAction extends GameAction {
+  type: 'fortify';
+  from: string;
+  to: string;
+  armies: number;
+}
+
+export type Action = DraftAction | AttackAction | FortifyAction;
+
+// Action Results from Backend
+export interface ActionResultBase {
+  actionIndex: number;
+  type: ActionType;
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+export interface DraftResult extends ActionResultBase {
+  type: 'draft';
+  updatedTerritory?: {
+    id: string;
+    armies: number;
+  };
+}
+
+export interface AttackResultData {
+  attackerDice: number[];
+  defenderDice: number[];
+  attackerLosses: number;
+  defenderLosses: number;
+  conquered: boolean;
+}
+
+export interface AttackResultResponse extends ActionResultBase {
+  type: 'attack';
+  attackResult?: AttackResultData;
+  updatedTerritories?: Array<{
+    id: string;
+    armies: number;
+    owner?: number;
+  }>;
+  playerEliminated?: boolean;
+}
+
+export interface FortifyResult extends ActionResultBase {
+  type: 'fortify';
+  updatedTerritories?: Array<{
+    id: string;
+    armies: number;
+  }>;
+}
+
+export type ActionResult = DraftResult | AttackResultResponse | FortifyResult;
+
+// API Request/Response types
+export interface TurnSubmitRequest {
+  gameId: string;
+  playerId: number;
+  actions: Action[];
+}
+
+export interface TurnSubmitResponse {
+  success: boolean;
+  turnEnded: boolean;
+  results: ActionResult[];
+  gameState: GameState;
+  gameLog: GameLogEntry[];
+}
+
+export interface NewGameRequest {
+  players: Array<{
+    name: string;
+    color: string;
+  }>;
+  settings?: {
+    initialDistribution?: 'random' | 'manual';
+    map?: 'world' | 'europe';
+  };
+}
+
+export interface NewGameResponse {
+  success: boolean;
+  gameId: string;
+  initialState: GameState;
+}
+
+export interface GameStateResponse {
+  gameId: string;
+  turn: number;
+  currentPlayer: number;
+  phase: 'draft' | 'attack' | 'fortify';
+  armiesToPlace: number;
+  territories: Territory[];
+  players: Player[];
+}
