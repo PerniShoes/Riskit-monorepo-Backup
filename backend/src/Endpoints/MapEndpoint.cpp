@@ -51,6 +51,8 @@ Response MapEndpoint::HGET()
         return Response{map.dump(4),"200 OK"};
     }
 
+    // Make it possible to read a certain territory
+    // 
     // ???multiple optionals to be able to access by territory or continent or region???
 
     ordered_json err = {{"error", "map functionality missing, or error"}, {"id", id}};
@@ -62,14 +64,18 @@ Response MapEndpoint::HPOST()
 {
     systemsPtr->MapM->LoadFromJson(m_Request.json());
 
-    return Response{"Map load worked","200 OK"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Map load worked";
+
+    return Response{resp.dump(4),"200 OK"};
 }
 Response MapEndpoint::HPUT()
 {
-    return {"Not implemented yet","StateEP"};
+
+    return Response{"Not implemented yet","MapEP"};
 }
 Response MapEndpoint::HDELETE()
 {
-    return {"Not implemented yet","StateEP"};
+    return {"Not implemented yet","MapEP"};
 }
 

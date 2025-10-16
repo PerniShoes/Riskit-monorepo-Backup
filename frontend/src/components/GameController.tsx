@@ -23,7 +23,7 @@ import {
   Clear,
 } from '@mui/icons-material';
 import type { Player, GameState, Action } from '../types/game';
-import RiskAnalysis from './RiskAnalysis';
+// import RiskAnalysis from './RiskAnalysis';      Co to jest i czemu jest fetchowane ciągle xdd
 
 interface GameControllerProps {
   gameState: GameState;
@@ -361,10 +361,10 @@ export default function GameController({
       </Card>
 
       {/* Risk Analysis */}
-      <RiskAnalysis 
-        selectedTerritory={selectedTerritory?.name}
-        playerName={currentPlayerData?.name}
-      />
+      {/*<RiskAnalysis */}
+      {/*  selectedTerritory={selectedTerritory?.name}*/}
+      {/*  playerName={currentPlayerData?.name}*/}
+      {/*/>*/}
     </Box>
   );
 }

@@ -15,7 +15,7 @@ Response PlayerEndpoint::HGET()
 {
     using ordered_json = nlohmann::ordered_json;
 
-     std::string idStr = ExtractParam("id");
+    std::string idStr = ExtractParam("id");
     int id = 0;
     try { id = std::stoi(idStr); }
     catch (...) { id = 0; }
@@ -29,14 +29,6 @@ Response PlayerEndpoint::HGET()
         {
         case -1:
             responseJson["Error"] = "Did you call /api/player GET??? (no id)";
-
-
-
-
-
-
-
-
             break;
         case -2:
             responseJson["Error"] = "Didn't find the required param (id)";

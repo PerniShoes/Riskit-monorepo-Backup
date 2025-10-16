@@ -14,7 +14,7 @@ export interface GameState {
   currentPlayer: number;
   turn: number;
   phase: 'draft' | 'attack' | 'fortify';
-  armiesToPlace: number;
+  armiesToPlace: number; // In gameState? Not per player? Cos nie dziala, bo na 0 armiach i tak jest "Cannot leave draft phase with armies remaining""
   gameLog: GameLogEntry[];
   selectedTerritory: Territory | null;
   attackFromTerritory: Territory | null;

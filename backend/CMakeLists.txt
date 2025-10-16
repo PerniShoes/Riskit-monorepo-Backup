@@ -64,7 +64,7 @@ add_executable(riskit_tests
     src/TestFiles/PlayerEndpointTests.cpp
     ${COMMON_SOURCES}   
     
- "src/TestFiles/PlayerEndpointTests.cpp"  "src/Endpoints/MapEndpoint.cpp" "src/TestFiles/StateEndpointTests.cpp")
+ "src/TestFiles/PlayerEndpointTests.cpp"  "src/Endpoints/MapEndpoint.cpp" "src/TestFiles/StateEndpointTests.cpp" "src/TestFiles/MapEndpointTests.cpp")
 
 target_include_directories(riskit_tests PRIVATE
     ${COMMON_INCLUDES}

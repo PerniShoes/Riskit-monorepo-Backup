@@ -35,6 +35,8 @@ public:
     int GetWinnerId() const;
     bool GetGameStarted() const; 
 
+    nlohmann::ordered_json HandleAttack(const nlohmann::ordered_json& jsonInput);
+
     void LoadFromJson(const nlohmann::ordered_json& jsonInput);
     nlohmann::ordered_json StateToJson();
 

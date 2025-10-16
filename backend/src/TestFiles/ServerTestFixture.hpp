@@ -19,6 +19,7 @@ protected:
         // Register all endpoints
         server.RegisterEndpoint(std::make_unique<PlayerEndpoint>());
         server.RegisterEndpoint(std::make_unique<StateEndpoint>());
+        server.RegisterEndpoint(std::make_unique<MapEndpoint>());
         endpoints = server.GetEndpoints();
     }
 

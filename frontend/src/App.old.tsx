@@ -100,15 +100,17 @@ function App() {
           });
 
 
-      const stateData = {
-          turn: 0,
-          phase: "Setup",
-          currentPlayerId: 1,
+      const attackData = {
+          attacks: {
+
+
+
+          }
       };
       fetch("/api/state", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(stateData),
+          body: JSON.stringify(attackData),
       })
       const mapData = {
           territories: {

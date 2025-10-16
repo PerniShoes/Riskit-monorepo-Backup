@@ -13,7 +13,7 @@ import GameController from './components/GameController';
 import { useGameLogic } from './hooks/useGameLogic';
 import { useGameApi } from './hooks/useGameApi';
 import { mockApi } from './services/mockApi';
-import type { Player, TurnSubmitResponse, ActionResult, GameState } from './types/game';
+import type { Player, TurnSubmitResponse, AttackAction, ActionResult, GameState } from './types/game';
 
 const theme = createTheme();
 
@@ -83,8 +83,127 @@ function App() {
   // Initialize game on mount
   useEffect(() => {
     const initGame = async () => {
-      try {
-        // Use mock API for now
+        try {
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            interface Territory {
+                id: string;
+                name: string;
+                armies: number;
+                ownerId: number;
+            }
+            // Initial territories
+            const territories: Territory[] = [
+                {
+                    id: "Alaska",
+                    name: "Alaska",
+                    armies: 9,
+                    ownerId: 1,
+                },
+                {
+                    id: "Northwest Territory",
+                    name: "Northwest Territory",
+                    armies: 12,
+                    ownerId: 2,
+                },
+                {
+                    id: "Ukraine",
+                    name: "Ukraine",
+                    armies: 4,
+                    ownerId: 1,
+                },
+                {
+                    id: "Afghanistan",
+                    name: "Afghanistan",
+                    armies: 2,
+                    ownerId: 2,
+                },
+                {
+                    id: "Egypt",
+                    name: "Egypt",
+                    armies: 6,
+                    ownerId: 3,
+                },
+                {
+                    id: "East Africa",
+                    name: "East Africa",
+                    armies: 0,
+                    ownerId: 3,
+                },
+            ];
+            const mapData = {
+                territories, // Moze sie innaczej nazywac, ale trzeba zmienic w MapManager
+            };
+            // POST to map containing territories (initial map state)
+            const mapResponse = await fetch("/api/map", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(mapData),
+            })
+            console.log("Map response:", await mapResponse.json());
+            fetch("/api/map") // Sprawdza stan mapy przed atakami
+
+            const attacks: AttackAction[] = [
+                {
+                    type: 'attack',             // Nie czytam
+                    timestamp: Date.now(),      // Nie czytam
+                    from: 'Alaska',             // Czytam
+                    to: 'Northwest Territory',  // Czytam
+                    armies: 3,                  // Czytam
+                },
+                {
+                    type: 'attack',
+                    timestamp: Date.now(),
+                    from: 'Ukraine',
+                    to: 'Afghanistan',
+                    armies: 5,
+                },
+                {
+                    type: 'attack',
+                    timestamp: Date.now(),
+                    from: 'Egypt',
+                    to: 'East Africa',
+                    armies: 2,
+                },
+                {
+                    type: 'attack',
+                    timestamp: Date.now(),
+                    from: 'Alaska',
+                    to: 'Northwest Territory',
+                    armies: 3,
+                },
+                {
+                    type: 'attack',
+                    timestamp: Date.now(),
+                    from: 'Alaska',
+                    to: 'Northwest Territory',
+                    armies: 3,
+                },
+                {
+                    type: 'attack',
+                    timestamp: Date.now(),
+                    from: 'Alaska',
+                    to: 'Northwest Territory',
+                    armies: 5,
+                },
+            ];
+
+            const attackData = {
+                attacks, // "Attack history" array. (attacks moze sie innaczej nazywac, ale trzeba zmienic w StateManager.cpp linijka 93 i 95)
+            };
+            // mozliwe param: attack/draft/fortify (tylko attack napisany)
+            const attackResponse = await fetch("/api/state/attack", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(attackData),
+            })
+            console.log("Attack response:", await attackResponse.json());
+            fetch("/api/map") // Sprawdza stan mapy po attakach
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // Use mock API for now
         const newGameResponse = await mockApi.createGame([
           { name: 'Gracz 1', color: playerColors[0] },
           { name: 'Gracz 2', color: playerColors[1] },
