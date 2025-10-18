@@ -171,20 +171,32 @@ void EndpointBase::SetSystemsManager(SystemsManagerDB* systemsManager)
 
 Response EndpointBase::HGET()
 {
-    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Current Endpoint doesn't support GET";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 
 Response EndpointBase::HPOST()
 {
-    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Current Endpoint doesn't support POST";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 Response EndpointBase::HPUT()
 {
-    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Current Endpoint doesn't support PUT";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 Response EndpointBase::HDELETE()
 {
-    return {"Current Endpoint doesn't support this","405 Method Not Allowed"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Current Endpoint doesn't support DELETE";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 
 

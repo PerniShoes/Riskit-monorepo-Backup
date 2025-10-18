@@ -1,5 +1,6 @@
 #include "StateManager.hpp"
 #include "SystemsManagerDB.hpp"
+#include "JsonHelpers.hpp"
 
 StateManager::StateManager(SystemsManagerDB& systemsManager)
     :m_SystemsManager{systemsManager}
@@ -57,11 +58,13 @@ bool StateManager::GetGameStarted() const
 
 void StateManager::LoadFromJson(const nlohmann::ordered_json& jsonInput)
 {
+    using namespace JsonHelp;
+    using namespace std;
 
-    m_CurrentTurn = jsonInput.value("turn",-1);
-    std::string temp = jsonInput.value("phase","Undefined");
+    m_CurrentTurn = SafeGet<int>(jsonInput,"turn",-1);
+    std::string temp = SafeGet<string>(jsonInput,"phase","Undefined");
     m_CurrentPhase = m_PhaseString.right.at(temp);
-    m_CurrentPlayerId = jsonInput.value("currentPlayerId",-1);
+    m_CurrentPlayerId = SafeGet<int>(jsonInput,"currentPlayerId",-1);
     
 }
 

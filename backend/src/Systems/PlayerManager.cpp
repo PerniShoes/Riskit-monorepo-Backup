@@ -3,6 +3,7 @@
 #include <print>
 #include "SystemsManagerDB.hpp"
 #include "Player.hpp"
+#include "JsonHelpers.hpp"
 
 PlayerManager::PlayerManager(SystemsManagerDB& systemsManager)
     :m_SystemsManager{systemsManager}
@@ -45,12 +46,18 @@ const nlohmann::ordered_json  PlayerManager::GetPlayerJson(int id,bool lastPlaye
 
 Player PlayerManager::FromJson(const nlohmann::ordered_json& jsonInput)
 {
+    using namespace JsonHelp;
+    using namespace std;
+
     Player p;
 
-    p.id = jsonInput.value("id",-1);                 // -1 missing ID
-    p.name = jsonInput.value("name","Unknown");
-    p.color = jsonInput.value("color","#000000");
-    p.gold = jsonInput.value("gold",0);
+    p.id = SafeGet<int>(jsonInput, "id",-1);                 // -1 missing ID
+    p.name = SafeGet<string>(jsonInput, "name","Unknown");
+    p.color = SafeGet<string>(jsonInput, "color","#000000");
+    p.gold = SafeGet<int>(jsonInput, "gold",0);
+
+    // CAUTION
+    // Army array and countinents controlled is not secure yet
 
     // Army: map<string,int>
     if (jsonInput.contains("army") && jsonInput["army"].is_object())

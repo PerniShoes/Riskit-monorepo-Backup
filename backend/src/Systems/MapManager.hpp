@@ -79,7 +79,7 @@ public:
     //bool IsRegionControlled(int playerId,const std::string& region) const;
 
     bool AreNeighbors(std::string territoryA,std::string territoryB) const;
-    int CalculateBonusForPlayer(int playerId) const;
+    //int CalculateBonusForPlayer(int playerId) const;
 
     // Buildings
     void UpgradeBuilding(int territoryId, std::string buildingType);

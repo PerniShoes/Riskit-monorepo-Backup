@@ -2,6 +2,7 @@
 #include "SystemsManagerDB.hpp"
 #include <print>
 #include <algorithm>
+#include "JsonHelpers.hpp"
 
 MapManager::MapManager(SystemsManagerDB& systemsManager)
     : m_SystemsManager(systemsManager)
@@ -95,25 +96,25 @@ const std::unordered_map<std::string,Region>& MapManager::GetAllRegions() const
 //    return false;
 //}
 
-int MapManager::CalculateBonusForPlayer(int playerId) const
-{
-    int bonus = 0;
-
-    // Continents
-    for (const auto& [name,continent] : m_Continents)
-    {
-        //if (IsContinentControlled(playerId,name))
-            bonus += continent.bonusArmies;
-    }
-
-    // Regions
-    for (const auto& [name,region] : m_Regions)
-    {
-        //if (IsRegionControlled(playerId,name))
-            bonus += region.bonusArmies;
-    }
-    return bonus;
-}
+//int MapManager::CalculateBonusForPlayer(int playerId) const
+//{
+//    int bonus = 0;
+//
+//    // Continents
+//    for (const auto& [name,continent] : m_Continents)
+//    {
+//        //if (IsContinentControlled(playerId,name))
+//            bonus += continent.bonusArmies;
+//    }
+//
+//    // Regions
+//    for (const auto& [name,region] : m_Regions)
+//    {
+//        //if (IsRegionControlled(playerId,name))
+//            bonus += region.bonusArmies;
+//    }
+//    return bonus;
+//}
 
 //void MapManager::UpgradeBuilding(int territoryId,std::string buildingType)
 //{
@@ -133,11 +134,20 @@ int MapManager::CalculateBonusForPlayer(int playerId) const
 
 void MapManager::LoadFromJson(const nlohmann::ordered_json& jsonInput)
 {
+    using namespace JsonHelp;
+    
+    int fallbackIndex{0};
     if (jsonInput.contains("territories") && jsonInput["territories"].is_array())
     {
         for (auto& territority : jsonInput["territories"])
         {
-            m_Territories[territority.value("name","Unknonwn")] = (TerritoryFromJson(territority));
+            Territory temp = (TerritoryFromJson(territority));
+            if (temp.name == "Unknown")
+            {
+                temp.name += std::to_string(fallbackIndex);
+            }
+            m_Territories[temp.name] = temp;
+            ++fallbackIndex;
         }
     }
     
@@ -155,20 +165,25 @@ void MapManager::LoadFromJson(const nlohmann::ordered_json& jsonInput)
 
 Territory MapManager::TerritoryFromJson(const nlohmann::ordered_json& jsonInput)
 {
+    using namespace JsonHelp;
+    using namespace std;
 
     Territory temp;
     temp.id = -1; // Not using it rn
-    temp.name = jsonInput.value("name","Unknown");
-    temp.ownerId = jsonInput.value("ownerId",-1);
-    temp.armies = jsonInput.value("armies",-1);
-    temp.continent = jsonInput.value("continent","Unknown");
-    temp.region = jsonInput.value("region","Unknown");
+    temp.name = SafeGet<string>(jsonInput,"name","Unknown");
+    temp.ownerId = SafeGet<int>(jsonInput,"ownerId",-1);
+    temp.armies = SafeGet<int>(jsonInput,"armies",-1);
+    temp.continent = SafeGet<string>(jsonInput,"continent","Unknown");
+    temp.region = SafeGet<string>(jsonInput,"region","Unknown");
 
     if (jsonInput.contains("neighbors") && jsonInput["neighbors"].is_array())
     {
         for (auto& neighborsId : jsonInput["neighbors"])
         {
+            // int tempNeighborId = SafeGet<int>(neighborsId,"neighbors",-1);
+            // NOT SECURE and not used yet
             temp.neighbors.push_back(neighborsId.get<int>());
+
         }
     }
 

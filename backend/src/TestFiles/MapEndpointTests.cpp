@@ -9,7 +9,7 @@ TEST_F(ServerTestFixture,POST_MapEndpoint_ValidData)
 
     nlohmann::ordered_json map;
     map["territories"] = {
-        { {"id", "1"}, {"name", "Alaska"}, {"armies", 5}, {"ownerId", 1} },
+        { {"id", "1"}, {1, "Alaska"}, {"armies", 5}, {"ownerId", 1} },
         { {"id", "2"}, {"name", "Northwest Territory"}, {"armies", 3}, {"ownerId", 2} },
         { {"id", "3"}, {"name", "Ukraine"}, {"armies", 4}, {"ownerId", 1} },
         { {"id", "4"}, {"name", "Afghanistan"}, {"armies", 2}, {"ownerId", 2} },
@@ -22,7 +22,7 @@ TEST_F(ServerTestFixture,POST_MapEndpoint_ValidData)
 
     auto jsonResp = resp.body;
     PrintResp(jsonResp);
-    auto jsonResp = resp.body;
+    auto jsonResp2 = resp.body;
 
 
 }

@@ -67,11 +67,17 @@ Response PlayerEndpoint::HPOST()
 }
 Response PlayerEndpoint::HPUT()
 {
-    return {"Not implemented yet","PlayerEP"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Player PUT not implemented yt";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 Response PlayerEndpoint::HDELETE()
 {
-    return {"Not implemented yet","PlayerEP"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Player DELETE not implemented yt";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 
 

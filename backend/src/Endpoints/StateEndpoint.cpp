@@ -77,6 +77,9 @@ Response StateEndpoint::HPUT()
 }
 Response StateEndpoint::HDELETE()
 {
-    return {"Not implemented yet","StateEP"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "State DELETE not implemented yt";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 

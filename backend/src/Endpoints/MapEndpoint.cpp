@@ -71,11 +71,16 @@ Response MapEndpoint::HPOST()
 }
 Response MapEndpoint::HPUT()
 {
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Map PUT not implemented yt";
 
-    return Response{"Not implemented yet","MapEP"};
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 Response MapEndpoint::HDELETE()
 {
-    return {"Not implemented yet","MapEP"};
+    nlohmann::ordered_json resp;
+    resp["Message"] = "Map DELETE not implemented yt";
+
+    return Response{resp.dump(4),"405 Method Not Allowed"};
 }
 
