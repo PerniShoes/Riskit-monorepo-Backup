@@ -17,7 +17,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 /**
  * Fetch wrapper with error handling
- */
+ */ 
 async function apiCall<T>(
   endpoint: string,
   options?: RequestInit
