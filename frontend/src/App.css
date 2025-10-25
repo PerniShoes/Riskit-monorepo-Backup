@@ -1,42 +1,237 @@
 #root {
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 0;
+  text-align: left;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
 }
 
-@keyframes logo-spin {
+.risk-map-container {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b4d66 100%);
+  background-size: 20px 20px;
+  background-image: 
+    radial-gradient(circle, #ffffff15 1px, transparent 1px);
+}
+
+/* Animacje dla terytoriów */
+@keyframes territoryPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+@keyframes territoryGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+}
+
+.territory-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.territory-button:hover {
+  transform: scale(1.1) translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.territory-selected {
+  animation: territoryGlow 2s ease-in-out infinite;
+}
+
+.territory-highlighted {
+  animation: territoryPulse 1.5s infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #root {
+    padding: 0.5rem;
+  }
+  
+  .risk-map-container {
+    transform: scale(0.8);
+    transform-origin: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .risk-map-container {
+    transform: scale(0.6);
+  }
+}
+
+/* Card hover effects */
+.MuiCard-root {
+  transition: all 0.3s ease !important;
+}
+
+.MuiCard-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Button animations */
+.MuiButton-root {
+  transition: all 0.2s ease !important;
+}
+
+.MuiButton-contained:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Progress bar styling */
+.MuiLinearProgress-root {
+  border-radius: 8px !important;
+  height: 10px !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.MuiLinearProgress-bar {
+  border-radius: 8px !important;
+}
+
+/* Risk level indicators */
+.risk-very-high {
+  background: linear-gradient(45deg, #dc2626, #ef4444) !important;
+  animation: dangerPulse 2s ease-in-out infinite;
+}
+
+.risk-high {
+  background: linear-gradient(45deg, #ea580c, #f97316) !important;
+}
+
+.risk-medium {
+  background: linear-gradient(45deg, #ca8a04, #eab308) !important;
+}
+
+.risk-low {
+  background: linear-gradient(45deg, #16a34a, #22c55e) !important;
+}
+
+.risk-very-low {
+  background: linear-gradient(45deg, #059669, #10b981) !important;
+}
+
+@keyframes dangerPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Game phase indicators */
+.phase-draft {
+  background: linear-gradient(45deg, #10b981, #059669) !important;
+}
+
+.phase-attack {
+  background: linear-gradient(45deg, #ef4444, #dc2626) !important;
+}
+
+.phase-fortify {
+  background: linear-gradient(45deg, #3b82f6, #2563eb) !important;
+}
+
+/* Loading animations */
+@keyframes fadeInUp {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(30px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
 }
 
-.card {
-  padding: 2em;
+/* Custom tooltip styling */
+.MuiTooltip-tooltip {
+  background: rgba(0, 0, 0, 0.9) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 8px !important;
+  font-size: 12px !important;
 }
 
-.read-the-docs {
-  color: #888;
+/* Player color indicators */
+.player-indicator {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Map connection lines */
+.territory-connection {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 2;
+  stroke-dasharray: 5,5;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.territory-connection:hover {
+  opacity: 1;
+  stroke: rgba(255, 255, 255, 0.8);
+}
+
+/* Game title styling */
+.game-title {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.3);
+  font-weight: 700 !important;
+  background: linear-gradient(45deg, #ffffff, #f1f5f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
 }

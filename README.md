@@ -1,29 +1,65 @@
 ﻿# RiskIT Monorepo
 
-Struktura:
+Gra strategiczna Risk z backend C++ i frontend React/TypeScript.
 
-- backend/ -> C++ (CMake)
-- frontend/ -> React + TypeScript (Vite)
+## Struktura
 
-Prerequisites:
+- `backend/` -> C++ HTTP server (CMake + Ninja)
+- `frontend/` -> React + TypeScript (Vite)
+- `backend_mock/` -> Node.js mock server (development)
 
-- Node.js + npm
-- CMake
-- Kompilator C++ (Visual Studio Build Tools / MSVC lub clang/gcc)
+## Quick Start
 
-Instrukcje:
+### Standardowy Development (lokalnie)
+```bash
+# Zainstaluj zależności
+make install
 
-- Frontend (dev):
+# Uruchom pełne środowisko dev (backend + frontend)
+make dev
 
-  - cd frontend
-  - npm run dev
+# Lub osobno:
+make backend-dev    # Backend na porcie 8081
+make frontend-dev   # Frontend na porcie 5173
+```
 
-- Frontend + mock backend (dev with proxy):
+### Docker Development
+```bash
+# Uruchom wszystko w Docker
+make docker-up
 
-  - cd frontend
-  - npm run dev:mock
-  - otworzy Vite i uruchomi prosty mock backend na http://localhost:8080
+# Z debuggerem C++ (gdbserver na porcie 7777)
+make docker-debug
 
-- Backend (cmake):
-  - cmake -S backend -B backend/build
-  - cmake --build backend/build --config Release
+# Zatrzymaj
+make docker-down
+```
+
+### Inne komendy
+```bash
+make help         # Pełna lista komend
+make build        # Zbuduj backend + frontend
+make test         # Podstawowe testy zdrowia
+make clean        # Wyczyść build artifacts
+```
+
+## URLs w Development
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8081
+- Mock Backend: http://localhost:8080
+
+## Prerequisites
+
+### Lokalny development:
+- Node.js 18+ + npm
+- CMake 3.15+
+- Ninja build system
+- GCC/Clang z C++17
+- nlohmann/json (Ubuntu: `apt install nlohmann-json3-dev`)
+
+### Docker development:
+- Docker + Docker Compose
+
+## Architecture
+
+Zobacz `ARCHITECTURE.md` dla szczegółowego planu rozwoju architektury gry.

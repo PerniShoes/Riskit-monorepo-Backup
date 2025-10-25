@@ -1,0 +1,46 @@
+# Docker setup for development with debugger support
+services:
+  backend-debug:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: riskit-backend-debug
+    ports:
+      - "8081:8081"
+      - "7777:7777"  # Port dla GDB remote debugging
+    volumes:
+      - ./backend:/app
+    environment:
+      - NODE_ENV=development
+    # Uruchom z gdbserver dla remote debugging
+    command: >
+      sh -c "cd build && 
+             gdbserver :7777 ./riskit_server"
+    stdin_open: true
+    tty: true
+    networks:
+      - riskit-network
+    cap_add:
+      - SYS_PTRACE  # Potrzebne dla debuggera
+
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: riskit-frontend-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Anonymous volume dla node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://backend-debug:8081
+    depends_on:
+      - backend-debug
+    networks:
+      - riskit-network
+
+networks:
+  riskit-network:
+    driver: bridge

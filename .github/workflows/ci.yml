@@ -40,6 +40,15 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+        - name: Run frontend Makefile (optional)
+          working-directory: frontend
+          run: |
+            if [ -f Makefile ]; then
+              make || (echo "Makefile failed"; exit 1)
+            else
+              echo "No Makefile found"
+            fi
+
       - name: Build frontend
         working-directory: frontend
         run: npm run build
